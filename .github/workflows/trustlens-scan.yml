@@ -27,7 +27,16 @@ jobs:
         run: curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
 
       - name: Run TrustLens Orchestrator
-        run: python trustlens/main.py . findings.json
+        run: python main.py . findings.json
+
+      - name: Install DB Dependencies
+        run: pip install psycopg2-binary sqlalchemy  # Adjust if your script uses specific drivers
+
+      - name: Ingest Findings to Cloud Database
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          python ingest_findings.py findings.json
 
       - name: Save Findings Artifact
         uses: actions/upload-artifact@v4
