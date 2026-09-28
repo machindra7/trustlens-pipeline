@@ -1,0 +1,762 @@
+[
+  {
+    "finding_id": "744c8134-ea28-4144-a314-c2dfaf6803e3",
+    "source_tool": "trivy",
+    "rule_id": "CVE-2019-7164",
+    "title": "python-sqlalchemy: SQL Injection when the order_by parameter can be controlled",
+    "severity_raw": "CRITICAL",
+    "category": "vulnerability",
+    "resource": "SQLAlchemy",
+    "location": {
+      "file": "requirements.txt",
+      "start_line": null,
+      "end_line": null
+    },
+    "code_snippet": null,
+    "cwe": null,
+    "description": "SQLAlchemy through 1.2.17 and 1.3.x through 1.3.0b2 allows SQL Injection via the order_by parameter.",
+    "timestamp": "2026-09-28T11:47:45.661268"
+  },
+  {
+    "finding_id": "07c78c0e-37a8-4bc5-8871-c489f090c223",
+    "source_tool": "trivy",
+    "rule_id": "CVE-2019-7548",
+    "title": "python-sqlalchemy: SQL Injection when the group_by parameter can be controlled",
+    "severity_raw": "CRITICAL",
+    "category": "vulnerability",
+    "resource": "SQLAlchemy",
+    "location": {
+      "file": "requirements.txt",
+      "start_line": null,
+      "end_line": null
+    },
+    "code_snippet": null,
+    "cwe": null,
+    "description": "SQLAlchemy 1.2.17 has SQL Injection when the group_by parameter can be controlled.",
+    "timestamp": "2026-09-28T11:47:45.661275"
+  },
+  {
+    "finding_id": "45f3f05d-f9a2-419b-9d8f-dce8b9b9915a",
+    "source_tool": "trivy",
+    "rule_id": "CVE-2018-20060",
+    "title": "python-urllib3: Cross-host redirect does not remove Authorization header allow for credential exposure",
+    "severity_raw": "CRITICAL",
+    "category": "vulnerability",
+    "resource": "urllib3",
+    "location": {
+      "file": "requirements.txt",
+      "start_line": null,
+      "end_line": null
+    },
+    "code_snippet": null,
+    "cwe": null,
+    "description": "urllib3 before version 1.23 does not remove the Authorization HTTP header when following a cross-origin redirect (i.e., a redirect that differs in host, port, or scheme). This can allow for credentials in the Authorization header to be exposed to unintended hosts or transmitted in cleartext.",
+    "timestamp": "2026-09-28T11:47:45.661370"
+  },
+  {
+    "finding_id": "8c142926-cac1-4d93-a669-d62c6e80a197",
+    "source_tool": "trivy",
+    "rule_id": "CVE-2023-30861",
+    "title": "flask: Possible disclosure of permanent session cookie due to missing Vary: Cookie header",
+    "severity_raw": "HIGH",
+    "category": "vulnerability",
+    "resource": "Flask",
+    "location": {
+      "file": "requirements.txt",
+      "start_line": null,
+      "end_line": null
+    },
+    "code_snippet": null,
+    "cwe": null,
+    "description": "Flask is a lightweight WSGI web application framework. When all of the following conditions are met, a response containing data intended for one client may be cached and subsequently sent by the proxy to other clients. If the proxy also caches `Set-Cookie` headers, it may send one client's `session` cookie to other clients. The severity depends on the application's use of the session and the proxy's behavior regarding cookies. The risk depends on all these conditions being met.\n\n1. The application must be hosted behind a caching proxy that does not strip cookies or ignore responses with cookies.\n2. The application sets `session.permanent = True`\n3. The application does not access or modify the session at any point during a request.\n4. `SESSION_REFRESH_EACH_REQUEST` enabled (the default).\n5. The application does not set a `Cache-Control` header to indicate that a page is private or should not be cached.\n\nThis happens because vulnerable versions of Flask only set the `Vary: Cookie` header when the session is accessed or modified, not when it is refreshed (re-sent to update the expiration) without being accessed or modified. This issue has been fixed in versions 2.3.2 and 2.2.5.",
+    "timestamp": "2026-09-28T11:47:45.661229"
+  },
+  {
+    "finding_id": "30357c5a-28cd-4c00-aaa6-1a2d28cfc739",
+    "source_tool": "trivy",
+    "rule_id": "CVE-2019-14322",
+    "title": "Pallets Werkzeug vulnerable to Path Traversal",
+    "severity_raw": "HIGH",
+    "category": "vulnerability",
+    "resource": "Werkzeug",
+    "location": {
+      "file": "requirements.txt",
+      "start_line": null,
+      "end_line": null
+    },
+    "code_snippet": null,
+    "cwe": null,
+    "description": "In Pallets Werkzeug before 0.15.5, SharedDataMiddleware mishandles drive names (such as C:) in Windows pathnames.",
+    "timestamp": "2026-09-28T11:47:45.661281"
+  },
+  {
+    "finding_id": "1821dfe4-b199-4fb4-9d6f-25450913b3bb",
+    "source_tool": "trivy",
+    "rule_id": "CVE-2019-14806",
+    "title": "python-werkzeug: insufficient debugger PIN randomness vulnerability",
+    "severity_raw": "HIGH",
+    "category": "vulnerability",
+    "resource": "Werkzeug",
+    "location": {
+      "file": "requirements.txt",
+      "start_line": null,
+      "end_line": null
+    },
+    "code_snippet": null,
+    "cwe": null,
+    "description": "Pallets Werkzeug before 0.15.3, when used with Docker, has insufficient debugger PIN randomness because Docker containers share the same machine id.",
+    "timestamp": "2026-09-28T11:47:45.661287"
+  },
+  {
+    "finding_id": "8615f7af-2c4c-4575-b13c-cbb22db52944",
+    "source_tool": "trivy",
+    "rule_id": "CVE-2023-25577",
+    "title": "python-werkzeug: high resource usage when parsing multipart form data with many fields",
+    "severity_raw": "HIGH",
+    "category": "vulnerability",
+    "resource": "Werkzeug",
+    "location": {
+      "file": "requirements.txt",
+      "start_line": null,
+      "end_line": null
+    },
+    "code_snippet": null,
+    "cwe": null,
+    "description": "Werkzeug is a comprehensive WSGI web application library. Prior to version 2.2.3, Werkzeug's multipart form data parser will parse an unlimited number of parts, including file parts. Parts can be a small amount of bytes, but each requires CPU time to parse and may use more memory as Python data. If a request can be made to an endpoint that accesses `request.data`, `request.form`, `request.files`, or `request.get_data(parse_form_data=False)`, it can cause unexpectedly high resource usage. This allows an attacker to cause a denial of service by sending crafted multipart data to an endpoint that will parse it. The amount of CPU time required can block worker processes from handling legitimate requests. The amount of RAM required can trigger an out of memory kill of the process. Unlimited file parts can use up memory and file handles. If many concurrent requests are sent continuously, this can exhaust or kill all available workers. Version 2.2.3 contains a patch for this issue.",
+    "timestamp": "2026-09-28T11:47:45.661292"
+  },
+  {
+    "finding_id": "ffb4df5d-9071-4fb7-b767-189f20413575",
+    "source_tool": "trivy",
+    "rule_id": "CVE-2024-34069",
+    "title": "python-werkzeug: user may execute code on a developer's machine",
+    "severity_raw": "HIGH",
+    "category": "vulnerability",
+    "resource": "Werkzeug",
+    "location": {
+      "file": "requirements.txt",
+      "start_line": null,
+      "end_line": null
+    },
+    "code_snippet": null,
+    "cwe": null,
+    "description": "Werkzeug is a comprehensive WSGI web application library. The debugger in affected versions of Werkzeug can allow an attacker to execute code on a developer's machine under some circumstances. This requires the attacker to get the developer to interact with a domain and subdomain they control, and enter the debugger PIN, but if they are successful it allows access to the debugger even if it is only running on localhost. This also requires the attacker to guess a URL in the developer's application that will trigger the debugger. This vulnerability is fixed in 3.0.3.",
+    "timestamp": "2026-09-28T11:47:45.661303"
+  },
+  {
+    "finding_id": "d605db79-e52d-446c-b86c-691d91521b3d",
+    "source_tool": "trivy",
+    "rule_id": "CVE-2018-18074",
+    "title": "python-requests: Redirect from HTTPS to HTTP does not remove Authorization header",
+    "severity_raw": "HIGH",
+    "category": "vulnerability",
+    "resource": "requests",
+    "location": {
+      "file": "requirements.txt",
+      "start_line": null,
+      "end_line": null
+    },
+    "code_snippet": null,
+    "cwe": null,
+    "description": "The Requests package before 2.20.0 for Python sends an HTTP Authorization header to an http URI upon receiving a same-hostname https-to-http redirect, which makes it easier for remote attackers to discover credentials by sniffing the network.",
+    "timestamp": "2026-09-28T11:47:45.661346"
+  },
+  {
+    "finding_id": "163600dd-26e2-4c1f-9648-8e63cf1cfdeb",
+    "source_tool": "trivy",
+    "rule_id": "CVE-2019-11324",
+    "title": "python-urllib3: Certification mishandle when error should be thrown",
+    "severity_raw": "HIGH",
+    "category": "vulnerability",
+    "resource": "urllib3",
+    "location": {
+      "file": "requirements.txt",
+      "start_line": null,
+      "end_line": null
+    },
+    "code_snippet": null,
+    "cwe": null,
+    "description": "The urllib3 library before 1.24.2 for Python mishandles certain cases where the desired set of CA certificates is different from the OS store of CA certificates, which results in SSL connections succeeding in situations where a verification failure is the correct outcome. This is related to use of the ssl_context, ca_certs, or ca_certs_dir argument.",
+    "timestamp": "2026-09-28T11:47:45.661375"
+  },
+  {
+    "finding_id": "75b4cb5f-fe0c-43af-b145-730c208d0b4d",
+    "source_tool": "trivy",
+    "rule_id": "CVE-2023-43804",
+    "title": "python-urllib3: Cookie request header isn't stripped during cross-origin redirects",
+    "severity_raw": "HIGH",
+    "category": "vulnerability",
+    "resource": "urllib3",
+    "location": {
+      "file": "requirements.txt",
+      "start_line": null,
+      "end_line": null
+    },
+    "code_snippet": null,
+    "cwe": null,
+    "description": "urllib3 is a user-friendly HTTP client library for Python. urllib3 doesn't treat the `Cookie` HTTP header special or provide any helpers for managing cookies over HTTP, that is the responsibility of the user. However, it is possible for a user to specify a `Cookie` header and unknowingly leak information via HTTP redirects to a different origin if that user doesn't disable redirects explicitly. This issue has been patched in urllib3 version 1.26.17 or 2.0.5.",
+    "timestamp": "2026-09-28T11:47:45.661380"
+  },
+  {
+    "finding_id": "f26fe61d-5574-4f66-b888-ef36a0de9442",
+    "source_tool": "trivy",
+    "rule_id": "CVE-2025-66471",
+    "title": "urllib3: urllib3 Streaming API improperly handles highly compressed data",
+    "severity_raw": "HIGH",
+    "category": "vulnerability",
+    "resource": "urllib3",
+    "location": {
+      "file": "requirements.txt",
+      "start_line": null,
+      "end_line": null
+    },
+    "code_snippet": null,
+    "cwe": null,
+    "description": "urllib3 is a user-friendly HTTP client library for Python. Starting in version 1.0 and prior to 2.6.0, the Streaming API improperly handles highly compressed data. urllib3's streaming API is designed for the efficient handling of large HTTP responses by reading the content in chunks, rather than loading the entire response body into memory at once. When streaming a compressed response, urllib3 can perform decoding or decompression based on the HTTP Content-Encoding header (e.g., gzip, deflate, br, or zstd). The library must read compressed data from the network and decompress it until the requested chunk size is met. Any resulting decompressed data that exceeds the requested amount is held in an internal buffer for the next read operation. The decompression logic could cause urllib3 to fully decode a small amount of highly compressed data in a single operation. This can result in excessive resource consumption (high CPU usage and massive memory allocation for the decompressed data.",
+    "timestamp": "2026-09-28T11:47:45.661386"
+  },
+  {
+    "finding_id": "8e50236c-5b9d-435e-9263-a40bad8b7ee7",
+    "source_tool": "semgrep",
+    "rule_id": "python.flask.security.injection.tainted-sql-string.tainted-sql-string",
+    "title": "Detected user input used to manually construct a SQL string. This is usually bad practice because manual construction could accidentally result in a SQL injection. An attacker could use a SQL injection to steal or modify contents of the database. Instead, use a parameterized query which is available by default in most database engines. Alternatively, consider using an object-relational mapper (ORM) such as SQLAlchemy which will protect your queries.",
+    "severity_raw": "HIGH",
+    "category": "injection",
+    "resource": null,
+    "location": {
+      "file": "sample_repo/app.py",
+      "start_line": 34,
+      "end_line": 34
+    },
+    "code_snippet": "requires login",
+    "cwe": [
+      "CWE-704: Incorrect Type Conversion or Cast"
+    ],
+    "description": "Detected user input used to manually construct a SQL string. This is usually bad practice because manual construction could accidentally result in a SQL injection. An attacker could use a SQL injection to steal or modify contents of the database. Instead, use a parameterized query which is available by default in most database engines. Alternatively, consider using an object-relational mapper (ORM) such as SQLAlchemy which will protect your queries.",
+    "timestamp": "2026-09-28T11:47:45.661437"
+  },
+  {
+    "finding_id": "5582c44a-1bf1-4b77-a357-f0524190b5bc",
+    "source_tool": "semgrep",
+    "rule_id": "python.django.security.injection.code.user-eval.user-eval",
+    "title": "Found user data in a call to 'eval'. This is extremely dangerous because it can enable an attacker to execute arbitrary remote code on the system. Instead, refactor your code to not use 'eval' and instead use a safe library for the specific functionality you need.",
+    "severity_raw": "HIGH",
+    "category": "injection",
+    "resource": null,
+    "location": {
+      "file": "sample_repo/app.py",
+      "start_line": 130,
+      "end_line": 134
+    },
+    "code_snippet": "requires login",
+    "cwe": [
+      "CWE-95: Improper Neutralization of Directives in Dynamically Evaluated Code ('Eval Injection')"
+    ],
+    "description": "Found user data in a call to 'eval'. This is extremely dangerous because it can enable an attacker to execute arbitrary remote code on the system. Instead, refactor your code to not use 'eval' and instead use a safe library for the specific functionality you need.",
+    "timestamp": "2026-09-28T11:47:45.661455"
+  },
+  {
+    "finding_id": "861d6b25-929a-4eb9-ae8c-012ca5397e45",
+    "source_tool": "semgrep",
+    "rule_id": "python.flask.security.injection.user-eval.eval-injection",
+    "title": "Detected user data flowing into eval. This is code injection and should be avoided.",
+    "severity_raw": "HIGH",
+    "category": "injection",
+    "resource": null,
+    "location": {
+      "file": "sample_repo/app.py",
+      "start_line": 134,
+      "end_line": 134
+    },
+    "code_snippet": "requires login",
+    "cwe": [
+      "CWE-95: Improper Neutralization of Directives in Dynamically Evaluated Code ('Eval Injection')"
+    ],
+    "description": "Detected user data flowing into eval. This is code injection and should be avoided.",
+    "timestamp": "2026-09-28T11:47:45.661628"
+  },
+  {
+    "finding_id": "6ecd2895-06f4-4a5d-8ccc-528dba9a8d29",
+    "source_tool": "semgrep",
+    "rule_id": "python.flask.security.audit.app-run-param-config.avoid_app_run_with_bad_host",
+    "title": "Running flask app with host 0.0.0.0 could expose the server publicly.",
+    "severity_raw": "HIGH",
+    "category": "code_vulnerability",
+    "resource": null,
+    "location": {
+      "file": "sample_repo/app.py",
+      "start_line": 199,
+      "end_line": 199
+    },
+    "code_snippet": "requires login",
+    "cwe": [
+      "CWE-668: Exposure of Resource to Wrong Sphere"
+    ],
+    "description": "Running flask app with host 0.0.0.0 could expose the server publicly.",
+    "timestamp": "2026-09-28T11:47:45.661643"
+  },
+  {
+    "finding_id": "47c5911f-4d3e-43b5-9a17-f7774b0b744f",
+    "source_tool": "semgrep",
+    "rule_id": "python.flask.security.audit.debug-enabled.debug-enabled",
+    "title": "Detected Flask app with debug=True. Do not deploy to production with this flag enabled as it will leak sensitive information. Instead, consider using Flask configuration variables or setting 'debug' using system environment variables.",
+    "severity_raw": "HIGH",
+    "category": "code_vulnerability",
+    "resource": null,
+    "location": {
+      "file": "sample_repo/app.py",
+      "start_line": 199,
+      "end_line": 199
+    },
+    "code_snippet": "requires login",
+    "cwe": [
+      "CWE-489: Active Debug Code"
+    ],
+    "description": "Detected Flask app with debug=True. Do not deploy to production with this flag enabled as it will leak sensitive information. Instead, consider using Flask configuration variables or setting 'debug' using system environment variables.",
+    "timestamp": "2026-09-28T11:47:45.661652"
+  },
+  {
+    "finding_id": "3f96146b-ec0f-4d93-8567-d4184ab947c4",
+    "source_tool": "semgrep",
+    "rule_id": "terraform.aws.security.aws-ec2-has-public-ip.aws-ec2-has-public-ip",
+    "title": "EC2 instances should not have a public IP address attached in order to block public access to the instances. To fix this, set your `associate_public_ip_address` to `\"false\"`.",
+    "severity_raw": "HIGH",
+    "category": "code_vulnerability",
+    "resource": null,
+    "location": {
+      "file": "sample_repo/main.tf",
+      "start_line": 72,
+      "end_line": 88
+    },
+    "code_snippet": "requires login",
+    "cwe": [
+      "CWE-1220: Insufficient Granularity of Access Control"
+    ],
+    "description": "EC2 instances should not have a public IP address attached in order to block public access to the instances. To fix this, set your `associate_public_ip_address` to `\"false\"`.",
+    "timestamp": "2026-09-28T11:47:45.661659"
+  },
+  {
+    "finding_id": "31e6fb59-306c-4535-8472-90b1ba2647ce",
+    "source_tool": "semgrep",
+    "rule_id": "terraform.lang.security.ec2-imdsv1-optional.ec2-imdsv1-optional",
+    "title": "AWS EC2 Instance allowing use of the IMDSv1",
+    "severity_raw": "HIGH",
+    "category": "code_vulnerability",
+    "resource": null,
+    "location": {
+      "file": "sample_repo/main.tf",
+      "start_line": 72,
+      "end_line": 88
+    },
+    "code_snippet": "requires login",
+    "cwe": [
+      "CWE-918: Server-Side Request Forgery (SSRF)"
+    ],
+    "description": "AWS EC2 Instance allowing use of the IMDSv1",
+    "timestamp": "2026-09-28T11:47:45.661669"
+  },
+  {
+    "finding_id": "98c42fdb-5ac4-4140-b75b-17ae6a79676d",
+    "source_tool": "semgrep",
+    "rule_id": "terraform.aws.security.aws-db-instance-no-logging.aws-db-instance-no-logging",
+    "title": "Database instance has no logging. Missing logs can cause missing important event information.",
+    "severity_raw": "HIGH",
+    "category": "code_vulnerability",
+    "resource": null,
+    "location": {
+      "file": "sample_repo/main.tf",
+      "start_line": 93,
+      "end_line": 118
+    },
+    "code_snippet": "requires login",
+    "cwe": [
+      "CWE-311: Missing Encryption of Sensitive Data"
+    ],
+    "description": "Database instance has no logging. Missing logs can cause missing important event information.",
+    "timestamp": "2026-09-28T11:47:45.661676"
+  },
+  {
+    "finding_id": "5c295e53-0e78-4a4e-9b44-4097c2dc6aa7",
+    "source_tool": "semgrep",
+    "rule_id": "terraform.aws.security.aws-rds-backup-no-retention.aws-rds-backup-no-retention",
+    "title": "The AWS RDS has no retention. Missing retention can cause losing important event information. To fix this, set a `backup_retention_period`.",
+    "severity_raw": "HIGH",
+    "category": "code_vulnerability",
+    "resource": null,
+    "location": {
+      "file": "sample_repo/main.tf",
+      "start_line": 93,
+      "end_line": 118
+    },
+    "code_snippet": "requires login",
+    "cwe": [
+      "CWE-320: CWE CATEGORY: Key Management Errors"
+    ],
+    "description": "The AWS RDS has no retention. Missing retention can cause losing important event information. To fix this, set a `backup_retention_period`.",
+    "timestamp": "2026-09-28T11:47:45.661683"
+  },
+  {
+    "finding_id": "99bc8266-fb28-44a1-bc86-4e2a799839ee",
+    "source_tool": "semgrep",
+    "rule_id": "terraform.lang.security.rds-insecure-password-storage-in-source-code.rds-insecure-password-storage-in-source-code",
+    "title": "RDS instance or cluster with hardcoded credentials in source code. It is recommended to pass the credentials at runtime, or generate random credentials using the random_password resource.",
+    "severity_raw": "HIGH",
+    "category": "code_vulnerability",
+    "resource": null,
+    "location": {
+      "file": "sample_repo/main.tf",
+      "start_line": 99,
+      "end_line": 99
+    },
+    "code_snippet": "requires login",
+    "cwe": [
+      "CWE-522: Insufficiently Protected Credentials"
+    ],
+    "description": "RDS instance or cluster with hardcoded credentials in source code. It is recommended to pass the credentials at runtime, or generate random credentials using the random_password resource.",
+    "timestamp": "2026-09-28T11:47:45.661691"
+  },
+  {
+    "finding_id": "6c4963cd-0382-4aa7-a480-beddbfa938f7",
+    "source_tool": "semgrep",
+    "rule_id": "terraform.aws.security.aws-kms-no-rotation.aws-kms-no-rotation",
+    "title": "The AWS KMS has no rotation. Missing rotation can cause leaked key to be used by attackers. To fix this, set a `enable_key_rotation`.",
+    "severity_raw": "HIGH",
+    "category": "code_vulnerability",
+    "resource": null,
+    "location": {
+      "file": "sample_repo/main.tf",
+      "start_line": 123,
+      "end_line": 131
+    },
+    "code_snippet": "requires login",
+    "cwe": [
+      "CWE-326: Inadequate Encryption Strength"
+    ],
+    "description": "The AWS KMS has no rotation. Missing rotation can cause leaked key to be used by attackers. To fix this, set a `enable_key_rotation`.",
+    "timestamp": "2026-09-28T11:47:45.661699"
+  },
+  {
+    "finding_id": "8cda0c48-9194-449a-9e7f-b15704b0adb0",
+    "source_tool": "trivy",
+    "rule_id": "CVE-2016-10516",
+    "title": "python-werkzeug: Cross-site scripting in render_full function in debug/tbtools.py",
+    "severity_raw": "MEDIUM",
+    "category": "vulnerability",
+    "resource": "Werkzeug",
+    "location": {
+      "file": "requirements.txt",
+      "start_line": null,
+      "end_line": null
+    },
+    "code_snippet": null,
+    "cwe": null,
+    "description": "Cross-site scripting (XSS) vulnerability in the render_full function in debug/tbtools.py in the debugger in Pallets Werkzeug before 0.11.11 (as used in Pallets Flask and other products) allows remote attackers to inject arbitrary web script or HTML via a field that contains an exception message.",
+    "timestamp": "2026-09-28T11:47:45.661308"
+  },
+  {
+    "finding_id": "53dd0ff0-e971-407d-b240-981bb1c6ed69",
+    "source_tool": "trivy",
+    "rule_id": "CVE-2020-28724",
+    "title": "python-werkzeug: open redirect via double slash in the URL",
+    "severity_raw": "MEDIUM",
+    "category": "vulnerability",
+    "resource": "Werkzeug",
+    "location": {
+      "file": "requirements.txt",
+      "start_line": null,
+      "end_line": null
+    },
+    "code_snippet": null,
+    "cwe": null,
+    "description": "Open redirect vulnerability in werkzeug before 0.11.6 via a double slash in the URL.",
+    "timestamp": "2026-09-28T11:47:45.661313"
+  },
+  {
+    "finding_id": "78b2d37a-bf20-4603-beb0-bd717b83d528",
+    "source_tool": "trivy",
+    "rule_id": "CVE-2024-49766",
+    "title": "werkzeug: python-werkzeug: Werkzeug safe_join not safe on Windows",
+    "severity_raw": "MEDIUM",
+    "category": "vulnerability",
+    "resource": "Werkzeug",
+    "location": {
+      "file": "requirements.txt",
+      "start_line": null,
+      "end_line": null
+    },
+    "code_snippet": null,
+    "cwe": null,
+    "description": "Werkzeug is a Web Server Gateway Interface web application library. On Python < 3.11 on Windows, os.path.isabs() does not catch UNC paths like //server/share. Werkzeug's safe_join() relies on this check, and so can produce a path that is not safe, potentially allowing unintended access to data. Applications using Python >= 3.11, or not using Windows, are not vulnerable. Werkzeug version 3.0.6 contains a patch.",
+    "timestamp": "2026-09-28T11:47:45.661319"
+  },
+  {
+    "finding_id": "c65a91aa-c0b2-4b2b-aaab-dc761d8e7074",
+    "source_tool": "trivy",
+    "rule_id": "CVE-2025-66221",
+    "title": "Werkzeug: Werkzeug: Denial of service via Windows device names in path segments",
+    "severity_raw": "MEDIUM",
+    "category": "vulnerability",
+    "resource": "Werkzeug",
+    "location": {
+      "file": "requirements.txt",
+      "start_line": null,
+      "end_line": null
+    },
+    "code_snippet": null,
+    "cwe": null,
+    "description": "Werkzeug is a comprehensive WSGI web application library. Prior to version 3.1.4, Werkzeug's safe_join function allows path segments with Windows device names. On Windows, there are special device names such as CON, AUX, etc that are implicitly present and readable in every directory. send_from_directory uses safe_join to safely serve files at user-specified paths under a directory. If the application is running on Windows, and the requested path ends with a special device name, the file will be opened successfully, but reading will hang indefinitely. This issue has been patched in version 3.1.4.",
+    "timestamp": "2026-09-28T11:47:45.661325"
+  },
+  {
+    "finding_id": "b530200a-4bbf-456e-afba-b1197c3f72f9",
+    "source_tool": "trivy",
+    "rule_id": "CVE-2026-21860",
+    "title": " Werkzeug safe_join() allows Windows special device names with compound extensions",
+    "severity_raw": "MEDIUM",
+    "category": "vulnerability",
+    "resource": "Werkzeug",
+    "location": {
+      "file": "requirements.txt",
+      "start_line": null,
+      "end_line": null
+    },
+    "code_snippet": null,
+    "cwe": null,
+    "description": "Werkzeug is a comprehensive WSGI web application library. Prior to version 3.1.5, Werkzeug's safe_join function allows path segments with Windows device names that have file extensions or trailing spaces. On Windows, there are special device names such as CON, AUX, etc that are implicitly present and readable in every directory. Windows still accepts them with any file extension, such as CON.txt, or trailing spaces such as CON. This issue has been patched in version 3.1.5.",
+    "timestamp": "2026-09-28T11:47:45.661330"
+  },
+  {
+    "finding_id": "f7449640-6e38-44ad-90cc-e28b88a46acd",
+    "source_tool": "trivy",
+    "rule_id": "CVE-2026-27199",
+    "title": " Werkzeug safe_join() allows Windows special device names",
+    "severity_raw": "MEDIUM",
+    "category": "vulnerability",
+    "resource": "Werkzeug",
+    "location": {
+      "file": "requirements.txt",
+      "start_line": null,
+      "end_line": null
+    },
+    "code_snippet": null,
+    "cwe": null,
+    "description": "Werkzeug is a comprehensive WSGI web application library. Versions 3.1.5 and below, the safe_join function allows Windows device names as filenames if preceded by other path segments. This was previously reported as GHSA-hgf8-39gv-g3f2, but the added filtering failed to account for the fact that safe_join accepts paths with multiple segments, such as example/NUL. The function send_from_directory uses safe_join to safely serve files at user-specified paths under a directory. If the application is running on Windows, and the requested path ends with a special device name, the file will be opened successfully, but reading will hang indefinitely. This issue has been fixed in version 3.1.6.",
+    "timestamp": "2026-09-28T11:47:45.661335"
+  },
+  {
+    "finding_id": "00b669cb-c36a-415c-914b-148cc8953d66",
+    "source_tool": "trivy",
+    "rule_id": "CVE-2023-32681",
+    "title": "python-requests: Unintended leak of Proxy-Authorization header",
+    "severity_raw": "MEDIUM",
+    "category": "vulnerability",
+    "resource": "requests",
+    "location": {
+      "file": "requirements.txt",
+      "start_line": null,
+      "end_line": null
+    },
+    "code_snippet": null,
+    "cwe": null,
+    "description": "Requests is a HTTP library. Since Requests 2.3.0, Requests has been leaking Proxy-Authorization headers to destination servers when redirected to an HTTPS endpoint. This is a product of how we use `rebuild_proxies` to reattach the `Proxy-Authorization` header to requests. For HTTP connections sent through the tunnel, the proxy will identify the header in the request itself and remove it prior to forwarding to the destination server. However when sent over HTTPS, the `Proxy-Authorization` header must be sent in the CONNECT request as the proxy has no visibility into the tunneled request. This results in Requests forwarding proxy credentials to the destination server unintentionally, allowing a malicious actor to potentially exfiltrate sensitive information. This issue has been patched in version 2.31.0.",
+    "timestamp": "2026-09-28T11:47:45.661351"
+  },
+  {
+    "finding_id": "ae1603c6-0ad6-47d1-b49b-5a85b7823765",
+    "source_tool": "trivy",
+    "rule_id": "CVE-2024-35195",
+    "title": "requests: subsequent requests to the same host ignore cert verification",
+    "severity_raw": "MEDIUM",
+    "category": "vulnerability",
+    "resource": "requests",
+    "location": {
+      "file": "requirements.txt",
+      "start_line": null,
+      "end_line": null
+    },
+    "code_snippet": null,
+    "cwe": null,
+    "description": "Requests is a HTTP library. Prior to 2.32.0, when making requests through a Requests `Session`, if the first request is made with `verify=False` to disable cert verification, all subsequent requests to the same host will continue to ignore cert verification regardless of changes to the value of `verify`. This behavior will continue for the lifecycle of the connection in the connection pool. This vulnerability is fixed in 2.32.0.",
+    "timestamp": "2026-09-28T11:47:45.661356"
+  },
+  {
+    "finding_id": "392e162a-3bc9-4201-9550-73efc64c63dc",
+    "source_tool": "trivy",
+    "rule_id": "CVE-2024-47081",
+    "title": "requests: Requests vulnerable to .netrc credentials leak via malicious URLs",
+    "severity_raw": "MEDIUM",
+    "category": "vulnerability",
+    "resource": "requests",
+    "location": {
+      "file": "requirements.txt",
+      "start_line": null,
+      "end_line": null
+    },
+    "code_snippet": null,
+    "cwe": null,
+    "description": "Requests is a HTTP library. Due to a URL parsing issue, Requests releases prior to 2.32.4 may leak .netrc credentials to third parties for specific maliciously-crafted URLs. Users should upgrade to version 2.32.4 to receive a fix. For older versions of Requests, use of the .netrc file can be disabled with `trust_env=False` on one's Requests Session.",
+    "timestamp": "2026-09-28T11:47:45.661361"
+  },
+  {
+    "finding_id": "f80b5fb5-f827-4df7-8243-7abb9c9a6566",
+    "source_tool": "trivy",
+    "rule_id": "CVE-2026-25645",
+    "title": "requests: Requests: Security bypass due to predictable temporary file creation",
+    "severity_raw": "MEDIUM",
+    "category": "vulnerability",
+    "resource": "requests",
+    "location": {
+      "file": "requirements.txt",
+      "start_line": null,
+      "end_line": null
+    },
+    "code_snippet": null,
+    "cwe": null,
+    "description": "Requests is a HTTP library. Prior to version 2.33.0, the `requests.utils.extract_zipped_paths()` utility function uses a predictable filename when extracting files from zip archives into the system temporary directory. If the target file already exists, it is reused without validation. A local attacker with write access to the temp directory could pre-create a malicious file that would be loaded in place of the legitimate one. Standard usage of the Requests library is not affected by this vulnerability. Only applications that call `extract_zipped_paths()` directly are impacted. Starting in version 2.33.0, the library extracts files to a non-deterministic location. If developers are unable to upgrade, they can set `TMPDIR` in their environment to a directory with restricted write access.",
+    "timestamp": "2026-09-28T11:47:45.661366"
+  },
+  {
+    "finding_id": "5e01424f-356c-4585-a96b-c12512627f65",
+    "source_tool": "trivy",
+    "rule_id": "CVE-2018-25091",
+    "title": "urllib3: urllib3 does not remove the authorization HTTP header when following a cross-origin redirect",
+    "severity_raw": "MEDIUM",
+    "category": "vulnerability",
+    "resource": "urllib3",
+    "location": {
+      "file": "requirements.txt",
+      "start_line": null,
+      "end_line": null
+    },
+    "code_snippet": null,
+    "cwe": null,
+    "description": "urllib3 before 1.24.2 does not remove the authorization HTTP header when following a cross-origin redirect (i.e., a redirect that differs in host, port, or scheme). This can allow for credentials in the authorization header to be exposed to unintended hosts or transmitted in cleartext. NOTE: this issue exists because of an incomplete fix for CVE-2018-20060 (which was case-sensitive).",
+    "timestamp": "2026-09-28T11:47:45.661390"
+  },
+  {
+    "finding_id": "3951dd84-7085-403d-95f6-4dcc8cee029b",
+    "source_tool": "trivy",
+    "rule_id": "CVE-2019-11236",
+    "title": "python-urllib3: CRLF injection due to not encoding the '\\r\\n' sequence leading to possible attack on internal service",
+    "severity_raw": "MEDIUM",
+    "category": "vulnerability",
+    "resource": "urllib3",
+    "location": {
+      "file": "requirements.txt",
+      "start_line": null,
+      "end_line": null
+    },
+    "code_snippet": null,
+    "cwe": null,
+    "description": "In the urllib3 library through 1.24.1 for Python, CRLF injection is possible if the attacker controls the request parameter.",
+    "timestamp": "2026-09-28T11:47:45.661400"
+  },
+  {
+    "finding_id": "34049ae5-c868-4118-a5f8-727da8f8b09b",
+    "source_tool": "trivy",
+    "rule_id": "CVE-2020-26137",
+    "title": "python-urllib3: CRLF injection via HTTP request method",
+    "severity_raw": "MEDIUM",
+    "category": "vulnerability",
+    "resource": "urllib3",
+    "location": {
+      "file": "requirements.txt",
+      "start_line": null,
+      "end_line": null
+    },
+    "code_snippet": null,
+    "cwe": null,
+    "description": "urllib3 before 1.25.9 allows CRLF injection if the attacker controls the HTTP request method, as demonstrated by inserting CR and LF control characters in the first argument of putrequest(). NOTE: this is similar to CVE-2020-26116.",
+    "timestamp": "2026-09-28T11:47:45.661405"
+  },
+  {
+    "finding_id": "0bea2050-982c-485e-a178-ee9ff3d7f933",
+    "source_tool": "trivy",
+    "rule_id": "CVE-2023-45803",
+    "title": "urllib3: Request body not stripped after redirect from 303 status changes request method to GET",
+    "severity_raw": "MEDIUM",
+    "category": "vulnerability",
+    "resource": "urllib3",
+    "location": {
+      "file": "requirements.txt",
+      "start_line": null,
+      "end_line": null
+    },
+    "code_snippet": null,
+    "cwe": null,
+    "description": "urllib3 is a user-friendly HTTP client library for Python. urllib3 previously wouldn't remove the HTTP request body when an HTTP redirect response using status 301, 302, or 303 after the request had its method changed from one that could accept a request body (like `POST`) to `GET` as is required by HTTP RFCs. Although this behavior is not specified in the section for redirects, it can be inferred by piecing together information from different sections and we have observed the behavior in other major HTTP client implementations like curl and web browsers. Because the vulnerability requires a previously trusted service to become compromised in order to have an impact on confidentiality we believe the exploitability of this vulnerability is low. Additionally, many users aren't putting sensitive data in HTTP request bodies, if this is the case then this vulnerability isn't exploitable. Both of the following conditions must be true to be affected by this vulnerability: 1. Using urllib3 and submitting sensitive information in the HTTP request body (such as form data or JSON) and 2. The origin service is compromised and starts redirecting using 301, 302, or 303 to a malicious peer or the redirected-to service becomes compromised. This issue has been addressed in versions 1.26.18 and 2.0.7 and users are advised to update to resolve this issue. Users unable to update should disable redirects for services that aren't expecting to respond with redirects with `redirects=False` and disable automatic redirects with `redirects=False` and handle 301, 302, and 303 redirects manually by stripping the HTTP request body.",
+    "timestamp": "2026-09-28T11:47:45.661410"
+  },
+  {
+    "finding_id": "d65158cd-7649-4995-b89e-39cf88e1e880",
+    "source_tool": "trivy",
+    "rule_id": "CVE-2024-37891",
+    "title": "urllib3: proxy-authorization request header is not stripped during cross-origin redirects",
+    "severity_raw": "MEDIUM",
+    "category": "vulnerability",
+    "resource": "urllib3",
+    "location": {
+      "file": "requirements.txt",
+      "start_line": null,
+      "end_line": null
+    },
+    "code_snippet": null,
+    "cwe": null,
+    "description": " urllib3 is a user-friendly HTTP client library for Python. When using urllib3's proxy support with `ProxyManager`, the `Proxy-Authorization` header is only sent to the configured proxy, as expected. However, when sending HTTP requests *without* using urllib3's proxy support, it's possible to accidentally configure the `Proxy-Authorization` header even though it won't have any effect as the request is not using a forwarding proxy or a tunneling proxy. In those cases, urllib3 doesn't treat the `Proxy-Authorization` HTTP header as one carrying authentication material and thus doesn't strip the header on cross-origin redirects. Because this is a highly unlikely scenario, we believe the severity of this vulnerability is low for almost all users. Out of an abundance of caution urllib3 will automatically strip the `Proxy-Authorization` header during cross-origin redirects to avoid the small chance that users are doing this on accident. Users should use urllib3's proxy support or disable automatic redirects to achieve safe processing of the `Proxy-Authorization` header, but we still decided to strip the header by default in order to further protect users who aren't using the correct approach. We believe the number of usages affected by this advisory is low. It requires all of the following to be true to be exploited: 1. Setting the `Proxy-Authorization` header without using urllib3's built-in proxy support. 2. Not disabling HTTP redirects. 3. Either not using an HTTPS origin server or for the proxy or target origin to redirect to a malicious origin. Users are advised to update to either version 1.26.19 or version 2.2.2. Users unable to upgrade may use the `Proxy-Authorization` header with urllib3's `ProxyManager`, disable HTTP redirects using `redirects=False` when sending requests, or not user the `Proxy-Authorization` header as mitigations.",
+    "timestamp": "2026-09-28T11:47:45.661415"
+  },
+  {
+    "finding_id": "7c3235fc-ecda-45c3-856a-e2f2e2349224",
+    "source_tool": "trivy",
+    "rule_id": "CVE-2025-50181",
+    "title": "urllib3: urllib3 redirects are not disabled when retries are disabled on PoolManager instantiation",
+    "severity_raw": "MEDIUM",
+    "category": "vulnerability",
+    "resource": "urllib3",
+    "location": {
+      "file": "requirements.txt",
+      "start_line": null,
+      "end_line": null
+    },
+    "code_snippet": null,
+    "cwe": null,
+    "description": "urllib3 is a user-friendly HTTP client library for Python. Prior to 2.5.0, it is possible to disable redirects for all requests by instantiating a PoolManager and specifying retries in a way that disable redirects. By default, requests and botocore users are not affected. An application attempting to mitigate SSRF or open redirect vulnerabilities by disabling redirects at the PoolManager level will remain vulnerable. This issue has been patched in version 2.5.0.",
+    "timestamp": "2026-09-28T11:47:45.661420"
+  },
+  {
+    "finding_id": "9e67cd1d-a10a-4fc4-b0a3-2e3083b63c88",
+    "source_tool": "trivy",
+    "rule_id": "CVE-2026-27205",
+    "title": "flask: Flask: Information disclosure via improper caching of session data",
+    "severity_raw": "LOW",
+    "category": "vulnerability",
+    "resource": "Flask",
+    "location": {
+      "file": "requirements.txt",
+      "start_line": null,
+      "end_line": null
+    },
+    "code_snippet": null,
+    "cwe": null,
+    "description": "Flask is a web server gateway interface (WSGI) web application framework. In versions 3.1.2 and below, when the session object is accessed, Flask should set the Vary: Cookie header., resulting in a Use of Cache Containing Sensitive Information vulnerability. The logic instructs caches not to cache the response, as it may contain information specific to a logged in user. This is handled in most cases, but some forms of access such as the Python in operator were overlooked. The severity and risk depend on the application being hosted behind a caching proxy that doesn't ignore responses with cookies, not setting a Cache-Control header to mark pages as private or non-cacheable, and accessing the session in a way that only touches keys without reading values or mutating the session. The issue has been fixed in version 3.1.3.",
+    "timestamp": "2026-09-28T11:47:45.661258"
+  },
+  {
+    "finding_id": "98793012-cc75-4a66-bf3a-974091e498b5",
+    "source_tool": "trivy",
+    "rule_id": "CVE-2023-23934",
+    "title": "python-werkzeug: cookie prefixed with = can shadow unprefixed cookie",
+    "severity_raw": "LOW",
+    "category": "vulnerability",
+    "resource": "Werkzeug",
+    "location": {
+      "file": "requirements.txt",
+      "start_line": null,
+      "end_line": null
+    },
+    "code_snippet": null,
+    "cwe": null,
+    "description": "Werkzeug is a comprehensive WSGI web application library. Browsers may allow \"nameless\" cookies that look like `=value` instead of `key=value`. A vulnerable browser may allow a compromised application on an adjacent subdomain to exploit this to set a cookie like `=__Host-test=bad` for another subdomain. Werkzeug prior to 2.2.3 will parse the cookie `=__Host-test=bad` as __Host-test=bad`. If a Werkzeug application is running next to a vulnerable or malicious subdomain which sets such a cookie using a vulnerable browser, the Werkzeug application will see the bad cookie value but the valid cookie key. The issue is fixed in Werkzeug 2.2.3.",
+    "timestamp": "2026-09-28T11:47:45.661340"
+  }
+]

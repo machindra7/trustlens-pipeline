@@ -1,0 +1,247 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                   TRUSTLENS QUICK REFERENCE CARD                           ║
+║              Cloud Security Auditing Framework - Step 1 & 2                ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ INSTALLATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  1. Install Python dependencies:
+     $ cd trustlens
+     $ pip install -r requirements.txt
+
+  2. OPTIONAL: Install scanners (for full pipeline):
+     macOS:   $ brew install checkov trivy semgrep
+     Linux:   $ pip install checkov; ... (see INSTALLATION.md)
+
+  3. Verify:
+     $ python test_pipeline.py    # Test without scanners
+     $ python main.py ./sample_repo  # Full scan
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ BASIC COMMANDS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Scan default location:
+  $ python main.py
+
+  Scan custom repo:
+  $ python main.py /path/to/repo
+
+  Scan with custom output:
+  $ python main.py /path/to/repo /path/to/findings.json
+
+  Test without scanners:
+  $ python test_pipeline.py
+
+  View results:
+  $ python -m json.tool findings.json | less
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ WHAT YOU GET
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Step 1 - SCANNING:
+    ✓ Checkov (Infrastructure misconfigurations)
+    ✓ Trivy (CVE vulnerabilities)
+    ✓ Semgrep (Code patterns / SAST)
+
+  Step 2 - NORMALIZATION:
+    ✓ Unified Finding Model (UFM)
+    ✓ Severity normalization
+    ✓ Deduplication
+    ✓ JSON output
+
+  OUTPUT FILE: findings.json
+    - One JSON object per finding
+    - 11 fields per finding
+    - Sorted by severity
+    - Ready for further processing
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ FINDING FORMAT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  {
+    "finding_id": "550e8400-e29b-41d4-a716-446655440000",  ← UUID
+    "source_tool": "checkov|trivy|semgrep",               ← Scanner
+    "rule_id": "CKV_AWS_18|CVE-2021-1234",               ← Rule identifier
+    "title": "S3 bucket missing logging",                 ← Human-readable
+    "severity_raw": "CRITICAL|HIGH|MEDIUM|LOW",           ← Severity
+    "category": "logging|encryption|vulnerability|...",   ← Type
+    "resource": "aws_s3_bucket.bucket1",                  ← Resource
+    "location": {                                          ← Code location
+      "file": "sample_repo/main.tf",
+      "start_line": 2,
+      "end_line": 6
+    },
+    "code_snippet": "resource \"aws_s3_bucket\"...",       ← Code excerpt
+    "cwe": ["CWE-778"],                                    ← CWE mapping
+    "description": "Bucket does not have logging...",     ← Description
+    "timestamp": "2026-09-28T07:37:08.289028"             ← ISO 8601
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ FILES & STRUCTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  trustlens/
+  ├── main.py                     ← Run this
+  ├── test_pipeline.py            ← Test without scanners
+  ├── requirements.txt            ← Dependencies
+  ├── models/finding.py           ← Data model
+  ├── scanners/                   ← Scanner wrappers
+  │   ├── checkov_scanner.py
+  │   ├── trivy_scanner.py
+  │   └── semgrep_scanner.py
+  ├── normalizer/normalize.py     ← Core logic
+  ├── sample_repo/                ← Test files
+  │   ├── main.tf                 (vulnerable Terraform)
+  │   ├── Dockerfile              (vulnerable container)
+  │   ├── app.py                  (vulnerable Python)
+  │   └── requirements.txt        (vulnerable deps)
+  └── [Documentation files]       ← See below
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ DOCUMENTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  README.md           Overview, features, quick start
+  INSTALLATION.md     Setup guide, troubleshooting, Docker
+  USAGE.md            Examples, CI/CD integration, tips
+  SUMMARY.md          Architecture, design decisions
+  INDEX.md            Navigation guide, learning resources
+  MANIFEST.md         Complete inventory, statistics
+  QUICK_REFERENCE.txt This file
+
+  START HERE → README.md
+  THEN INSTALL → INSTALLATION.md
+  THEN LEARN → USAGE.md
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ COMMON OPERATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Count findings by severity:
+  $ python -c "
+  import json
+  with open('findings.json') as f:
+      findings = json.load(f)
+      for severity in ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW']:
+          count = sum(1 for x in findings if x['severity_raw'] == severity)
+          print(f'{severity}: {count}')
+  "
+
+  Find findings in specific file:
+  $ python -c "
+  import json
+  with open('findings.json') as f:
+      findings = json.load(f)
+      for f in findings:
+          if 'app.py' in f['location']['file']:
+              print(f\"{f['severity_raw']} | {f['title']}\")
+  "
+
+  Filter by severity:
+  $ python -c "
+  import json
+  with open('findings.json') as f:
+      findings = [x for x in json.load(f) if x['severity_raw'] == 'CRITICAL']
+      print(json.dumps(findings, indent=2))
+  " > critical_only.json
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ ENVIRONMENT SETUP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Python Version:
+  $ python --version          # Should be 3.9+
+  $ python -m --version       # Should work
+
+  Check Dependencies:
+  $ python -c "import pydantic; print('✓ pydantic installed')"
+
+  Check Scanners (optional):
+  $ checkov --version
+  $ trivy version
+  $ semgrep --version
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ TROUBLESHOOTING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Problem              → Solution
+  ──────────────────────────────────────────────────────────────────────────
+  Scanner not found    → Install via brew/pip (see INSTALLATION.md)
+  Empty results        → Verify sample_repo exists or use test_pipeline.py
+  Import error         → Check Python path, pip install -r requirements.txt
+  Slow performance     → Check for large files, adjust timeouts
+  JSON parse error     → Check scanner version compatibility
+
+  Full troubleshooting: See INSTALLATION.md → Troubleshooting section
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ FEATURES AT A GLANCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ✓ 3 scanners integrated       ✓ Automatic deduplication
+  ✓ 11 finding fields           ✓ Severity normalization
+  ✓ CWE mapping                 ✓ Code snippet extraction
+  ✓ Line number tracking        ✓ UUID generation
+  ✓ ISO 8601 timestamps         ✓ JSON export
+  ✓ Pydantic validation         ✓ Error handling
+  ✓ Type hints throughout       ✓ Test pipeline included
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ CI/CD INTEGRATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  GitHub Actions:
+  See USAGE.md > Integration section for complete example
+
+  GitLab CI:
+  See USAGE.md > Integration section for complete example
+
+  Jenkins:
+  See USAGE.md > Integration section for complete example
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ QUICK FACTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Version:            1.0 (Step 1 & 2)
+  Status:             ✅ Complete & Tested
+  Python:             3.11+ recommended, 3.9+ minimum
+  Dependencies:       pydantic, python-dotenv
+  Scanners:           Checkov, Trivy, Semgrep (optional)
+  Languages:          Python 3.11+
+  Architecture:       Modular, extensible
+  Testing:            Included (test_pipeline.py)
+  Documentation:      Comprehensive (5 guides)
+  Performance:        ~10-20 seconds for sample repo
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ GETTING HELP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Documentation:
+  1. README.md       - What is this?
+  2. INSTALLATION.md - How to install?
+  3. USAGE.md        - How to use?
+  4. INDEX.md        - Find what you need
+  5. SUMMARY.md      - How does it work?
+
+  Quick Test:
+  $ python test_pipeline.py
+
+  External Help:
+  - Checkov: https://www.checkov.io/
+  - Trivy: https://aquasecurity.github.io/trivy/
+  - Semgrep: https://semgrep.dev/docs/
+
+╔════════════════════════════════════════════════════════════════════════════╗
+║                           READY TO SCAN! 🔐                               ║
+║                                                                            ║
+║  Next step: Read README.md or run: python test_pipeline.py               ║
+╚════════════════════════════════════════════════════════════════════════════╝

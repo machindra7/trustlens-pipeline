@@ -1,0 +1,256 @@
+[
+  {
+    "finding_id": "363a92e4-70be-4415-aa54-62ba7c1788c6",
+    "source_tool": "trivy",
+    "rule_id": "CVE-2021-5555",
+    "title": "urllib3 SSL/TLS certificate verification bypass",
+    "severity_raw": "CRITICAL",
+    "category": "vulnerability",
+    "resource": "urllib3",
+    "location": {
+      "file": "sample_repo/requirements.txt",
+      "start_line": null,
+      "end_line": null
+    },
+    "code_snippet": null,
+    "cwe": null,
+    "description": "Vulnerability in SSL certificate verification",
+    "timestamp": "2026-09-28T09:29:52.739371"
+  },
+  {
+    "finding_id": "c9960344-b896-4ce0-b65f-755b4dd40237",
+    "source_tool": "semgrep",
+    "rule_id": "python.lang.security.injection.sql.sql-injection",
+    "title": "User-controlled SQL query detected",
+    "severity_raw": "CRITICAL",
+    "category": "injection",
+    "resource": null,
+    "location": {
+      "file": "sample_repo/app.py",
+      "start_line": 26,
+      "end_line": 28
+    },
+    "code_snippet": "query = f\"SELECT * FROM users WHERE id = {user_id}\"",
+    "cwe": [
+      "CWE-89"
+    ],
+    "description": "User-controlled SQL query detected",
+    "timestamp": "2026-09-28T09:29:52.739388"
+  },
+  {
+    "finding_id": "d3d9747d-3eef-42d8-acf9-edeaaae8d6fd",
+    "source_tool": "semgrep",
+    "rule_id": "python.lang.security.insecure-pickle.insecure-pickle-use",
+    "title": "Unsafe use of pickle.loads() detected",
+    "severity_raw": "CRITICAL",
+    "category": "code_vulnerability",
+    "resource": null,
+    "location": {
+      "file": "sample_repo/app.py",
+      "start_line": 59,
+      "end_line": 61
+    },
+    "code_snippet": "deserialized = pickle.loads(data)",
+    "cwe": [
+      "CWE-502"
+    ],
+    "description": "Unsafe use of pickle.loads() detected",
+    "timestamp": "2026-09-28T09:29:52.739397"
+  },
+  {
+    "finding_id": "b3e30e3b-995a-4dca-80a4-72651be25205",
+    "source_tool": "trivy",
+    "rule_id": "CVE-2022-1234",
+    "title": "Flask XSS vulnerability",
+    "severity_raw": "HIGH",
+    "category": "vulnerability",
+    "resource": "flask",
+    "location": {
+      "file": "sample_repo/requirements.txt",
+      "start_line": null,
+      "end_line": null
+    },
+    "code_snippet": null,
+    "cwe": null,
+    "description": "Outdated version of Flask with known XSS vulnerability",
+    "timestamp": "2026-09-28T09:29:52.739361"
+  },
+  {
+    "finding_id": "2ed4b4b6-816d-4d8f-b2fd-abf5566af854",
+    "source_tool": "checkov",
+    "rule_id": "CKV_AWS_18",
+    "title": "Ensure S3 bucket has access logging enabled",
+    "severity_raw": "MEDIUM",
+    "category": "misconfiguration",
+    "resource": "aws_s3_bucket.bad_bucket",
+    "location": {
+      "file": "sample_repo/main.tf",
+      "start_line": 6,
+      "end_line": 6
+    },
+    "code_snippet": "bucket = \"publicly-accessible-bucket\"",
+    "cwe": [
+      "CWE-778"
+    ],
+    "description": "S3 bucket does not have access logging enabled",
+    "timestamp": "2026-09-28T09:29:52.739264"
+  },
+  {
+    "finding_id": "b081f33f-8ed3-47ce-9c6a-e5ef3c9facff",
+    "source_tool": "checkov",
+    "rule_id": "CKV_AWS_19",
+    "title": "Ensure S3 encryption is enabled",
+    "severity_raw": "MEDIUM",
+    "category": "misconfiguration",
+    "resource": "aws_s3_bucket.bad_bucket",
+    "location": {
+      "file": "sample_repo/main.tf",
+      "start_line": 6,
+      "end_line": 6
+    },
+    "code_snippet": "bucket = \"publicly-accessible-bucket\"",
+    "cwe": [
+      "CWE-311"
+    ],
+    "description": "S3 bucket is not encrypted",
+    "timestamp": "2026-09-28T09:29:52.739296"
+  },
+  {
+    "finding_id": "1fadab6b-ce90-46db-8cb3-a4ff9a5634a3",
+    "source_tool": "checkov",
+    "rule_id": "CKV_AWS_21",
+    "title": "Ensure all S3 buckets are encrypted",
+    "severity_raw": "MEDIUM",
+    "category": "misconfiguration",
+    "resource": "aws_s3_bucket.bad_bucket",
+    "location": {
+      "file": "sample_repo/main.tf",
+      "start_line": 6,
+      "end_line": 6
+    },
+    "code_snippet": "bucket = \"publicly-accessible-bucket\"",
+    "cwe": [
+      "CWE-311"
+    ],
+    "description": "S3 bucket is not encrypted with KMS",
+    "timestamp": "2026-09-28T09:29:52.739309"
+  },
+  {
+    "finding_id": "558de55a-3bf3-45d7-a85d-9aeb8449f4fb",
+    "source_tool": "checkov",
+    "rule_id": "CKV_AWS_23",
+    "title": "Ensure security groups do not allow ingress from 0.0.0.0",
+    "severity_raw": "MEDIUM",
+    "category": "misconfiguration",
+    "resource": "aws_security_group.bad_sg",
+    "location": {
+      "file": "sample_repo/main.tf",
+      "start_line": 47,
+      "end_line": 47
+    },
+    "code_snippet": "cidr_blocks = [\"0.0.0.0/0\"]",
+    "cwe": [
+      "CWE-22"
+    ],
+    "description": "Security group allows ingress from 0.0.0.0/0",
+    "timestamp": "2026-09-28T09:29:52.739317"
+  },
+  {
+    "finding_id": "a84fef0d-ad7b-4990-8640-ed5fdf0c15f5",
+    "source_tool": "checkov",
+    "rule_id": "CKV_AWS_24",
+    "title": "Ensure SSH is not allowed from 0.0.0.0",
+    "severity_raw": "MEDIUM",
+    "category": "misconfiguration",
+    "resource": "aws_security_group.bad_sg",
+    "location": {
+      "file": "sample_repo/main.tf",
+      "start_line": 54,
+      "end_line": 54
+    },
+    "code_snippet": "cidr_blocks = [\"0.0.0.0/0\"]",
+    "cwe": [
+      "CWE-22"
+    ],
+    "description": "SSH is exposed to the entire internet",
+    "timestamp": "2026-09-28T09:29:52.739327"
+  },
+  {
+    "finding_id": "cdfda136-cfe6-4f74-8a9d-b47a2eecd005",
+    "source_tool": "checkov",
+    "rule_id": "CKV_AWS_8",
+    "title": "Ensure EC2 instance does not have public IP",
+    "severity_raw": "MEDIUM",
+    "category": "misconfiguration",
+    "resource": "aws_instance.bad_instance",
+    "location": {
+      "file": "sample_repo/main.tf",
+      "start_line": 73,
+      "end_line": 73
+    },
+    "code_snippet": "associate_public_ip_address = true",
+    "cwe": [
+      "CWE-200"
+    ],
+    "description": "EC2 instance has a public IP address",
+    "timestamp": "2026-09-28T09:29:52.739334"
+  },
+  {
+    "finding_id": "9b1989c2-5c8b-4ec9-8397-59d1cf342a06",
+    "source_tool": "checkov",
+    "rule_id": "CKV_AWS_37",
+    "title": "Ensure DB instances do not have public access",
+    "severity_raw": "MEDIUM",
+    "category": "misconfiguration",
+    "resource": "aws_db_instance.bad_rds",
+    "location": {
+      "file": "sample_repo/main.tf",
+      "start_line": 103,
+      "end_line": 103
+    },
+    "code_snippet": "publicly_accessible = true",
+    "cwe": [
+      "CWE-200"
+    ],
+    "description": "RDS instance is publicly accessible",
+    "timestamp": "2026-09-28T09:29:52.739343"
+  },
+  {
+    "finding_id": "385948f0-baf0-4b00-8994-58b33bad485a",
+    "source_tool": "checkov",
+    "rule_id": "CKV_AWS_7",
+    "title": "Ensure KMS key rotation is enabled",
+    "severity_raw": "MEDIUM",
+    "category": "misconfiguration",
+    "resource": "aws_kms_key.bad_key",
+    "location": {
+      "file": "sample_repo/main.tf",
+      "start_line": 123,
+      "end_line": 123
+    },
+    "code_snippet": "enable_key_rotation = false",
+    "cwe": [
+      "CWE-320"
+    ],
+    "description": "KMS key does not have automatic rotation enabled",
+    "timestamp": "2026-09-28T09:29:52.739349"
+  },
+  {
+    "finding_id": "7941bb49-99cc-4637-b8ec-79419bd79019",
+    "source_tool": "trivy",
+    "rule_id": "CVE-2020-9494",
+    "title": "Requests HTTP/HTTPS redirects to FTP allowed",
+    "severity_raw": "MEDIUM",
+    "category": "vulnerability",
+    "resource": "requests",
+    "location": {
+      "file": "sample_repo/requirements.txt",
+      "start_line": null,
+      "end_line": null
+    },
+    "code_snippet": null,
+    "cwe": null,
+    "description": "Requests library allows redirect to FTP protocol",
+    "timestamp": "2026-09-28T09:29:52.739378"
+  }
+]
