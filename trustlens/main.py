@@ -31,7 +31,7 @@ def run_scanning(repo_path: str):
     Step 1: Run all three security scanners on the given repository path
     """
     logger.info("==================================================")
-    logger.info("  TrustLens — Step 1: Scanning")
+    logger.info("  TrustLens — Scanning The Code")
     logger.info("==================================================")
 
     checkov_findings = []
@@ -65,7 +65,7 @@ def run_normalization(
     repo_path: str,
 ) -> List[UnifiedFinding]:
     """
-    Step 2: Normalize all findings into Unified Finding Model (UFM)
+    Normalize all findings into Unified Finding Model (UFM)
     """
     normalizer = Normalizer()
     ufm_findings = normalizer.normalize_all(

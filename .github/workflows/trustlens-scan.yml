@@ -1,5 +1,6 @@
 name: TrustLens Security Pipeline
 
+# trigger when developer pushesh the code in main branch or developer opens pull request proposing changes
 on:
   push:
     branches:
@@ -8,10 +9,13 @@ on:
     branches:
       - main
 
+# create temporary new Linux Server to handle the scan
 jobs:
   scan:
     runs-on: ubuntu-latest
     steps:
+
+      # Downloads source code in Ubuntu server
       - name: Checkout Code
         uses: actions/checkout@v4
 
@@ -20,15 +24,18 @@ jobs:
         with:
           python-version: '3.10'
 
+      # installing the scanners
       - name: Install Semgrep & Checkov
         run: pip install semgrep checkov
 
       - name: Install Trivy
         run: curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
 
+      # it triggers the python script to scan the downloaded code collect different outputs, normalize them and bundle them into findings.json
       - name: Run TrustLens Orchestrator
         run: python main.py . findings.json
 
+      # The Database Connection
       - name: Install DB Dependencies
         run: pip install psycopg2-binary sqlalchemy  # Adjust if your script uses specific drivers
 
