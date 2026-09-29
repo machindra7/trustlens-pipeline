@@ -1,0 +1,6 @@
+Metadata-Version: 2.4
+Name: trustlens
+Version: 1.0.0
+Requires-Dist: psycopg2-binary
+Requires-Dist: sqlalchemy
+Dynamic: requires-dist

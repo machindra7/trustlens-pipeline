@@ -67,28 +67,40 @@ class CheckovScanner:
             logger.error(f"[Checkov] Unexpected error: {e}")
             return []
 
-    def _extract_findings(self, output: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def _extract_findings(self, output: Any) -> List[Dict[str, Any]]:
         """
         Extract findings from Checkov JSON output.
-        Checkov format includes 'failed_checks', 'passed_checks', 'skipped_checks'
+        Handles both single framework (Dict) and multi-framework (List) outputs.
         """
         findings = []
 
+        # 1. If Checkov scanned multiple frameworks (Terraform, Docker), it returns a list.
+        # We recursively process each framework's dictionary.
+        if isinstance(output, list):
+            for framework_result in output:
+                findings.extend(self._extract_findings(framework_result))
+            return findings
+
+        # 2. Checkov puts the actual findings inside a "results" object
+        results = output.get("results", {})
+        
+        # 3. Safely get the failed checks (default to empty list if none)
+        failed_checks = results.get("failed_checks", [])
+
         # Process failed checks
-        if "failed_checks" in output:
-            for check in output["failed_checks"]:
-                findings.append({
-                    "type": "failed",
-                    "check_id": check.get("check_id", ""),
-                    "check_name": check.get("check_name", ""),
-                    "file_path": check.get("file_path", ""),
-                    "file_abs_path": check.get("file_abs_path", ""),
-                    "check_result": check.get("check_result", {}),
-                    "code_block": check.get("code_block", []),
-                    "resource": check.get("resource", ""),
-                    "check_class": check.get("check_class", ""),
-                    "description": check.get("description", ""),
-                    "guideline": check.get("guideline", ""),
-                })
+        for check in failed_checks:
+            findings.append({
+                "type": "failed",
+                "check_id": check.get("check_id", ""),
+                "check_name": check.get("check_name", ""),
+                "file_path": check.get("file_path", ""),
+                "file_abs_path": check.get("file_abs_path", ""),
+                "check_result": check.get("check_result", {}),
+                "code_block": check.get("code_block", []),
+                "resource": check.get("resource", ""),
+                "check_class": check.get("check_class", ""),
+                "description": check.get("description", ""),
+                "guideline": check.get("guideline", ""),
+            })
 
         return findings
