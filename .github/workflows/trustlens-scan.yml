@@ -1,6 +1,6 @@
 name: TrustLens Security Pipeline
 
-# trigger when developer pushesh the code in main branch or developer opens pull request proposing changes
+# trigger when developer pushes the code in main branch or developer opens pull request proposing changes
 on:
   push:
     branches:
@@ -31,23 +31,21 @@ jobs:
       - name: Install Trivy
         run: curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
 
-      # it triggers the python script to scan the downloaded code collect different outputs, normalize them and bundle them into findings.json
-      - name: Run TrustLens Orchestrator
-        run: |
-          cd trustlens
-          python main.py .. findings.json
-
-      # The Database Connection
+      # 1. Install DB Dependencies FIRST so python can import psycopg2 safely
       - name: Install DB Dependencies
-        run: pip install psycopg2-binary sqlalchemy  # Adjust if your script uses specific drivers
+        run: |
+          python -m pip install --upgrade pip
+          pip install psycopg2-binary sqlalchemy pydantic
 
-      - name: Ingest Findings to Cloud Database
+      # 2. Now run the python script to scan, normalize, and ingest
+      - name: Run TrustLens Orchestrator & Ingest
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           cd trustlens
-          python ingest_findings.py findings.json
+          python main.py .. findings.json
 
+      # 3. Save Artifact report as a backup
       - name: Save Findings Artifact
         uses: actions/upload-artifact@v4
         if: always()
