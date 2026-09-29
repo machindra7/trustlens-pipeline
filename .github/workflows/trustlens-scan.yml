@@ -33,7 +33,9 @@ jobs:
 
       # it triggers the python script to scan the downloaded code collect different outputs, normalize them and bundle them into findings.json
       - name: Run TrustLens Orchestrator
-        run: python main.py . findings.json
+        run: |
+          cd trustlens
+          python main.py .. findings.json
 
       # The Database Connection
       - name: Install DB Dependencies
@@ -43,6 +45,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
+          cd trustlens
           python ingest_findings.py findings.json
 
       - name: Save Findings Artifact
@@ -50,4 +53,4 @@ jobs:
         if: always()
         with:
           name: trustlens-security-report
-          path: findings.json
+          path: trustlens/findings.json
