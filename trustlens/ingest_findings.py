@@ -1,16 +1,22 @@
 import json
 import psycopg2
+import sys
+import os
 
-DB_URL = "postgresql://postgres:postgres@localhost:5432/trustlens"
-
-def ingest():
+# We changed the function to accept two arguments from main.py
+def run_ingestion(json_file_path, database_url):
     try:
-        with open("findings.json", "r") as f:
+        # Now it dynamically reads whatever file path main.py tells it to
+        with open(json_file_path, "r") as f:
             findings = json.load(f)
         
-        conn = psycopg2.connect(DB_URL)
+        # Now it dynamically connects to whatever database URL was passed in
+        conn = psycopg2.connect(database_url)
         cursor = conn.cursor()
         
+        # NOTE: TRUNCATE clears the entire table. 
+        # If you plan to store multiple projects in this one database, 
+        # you will eventually want to change this to only DELETE rows matching a specific project name.
         cursor.execute("TRUNCATE TABLE findings RESTART IDENTITY;")
         
         count = 0
@@ -37,7 +43,12 @@ def ingest():
         conn.close()
         print(f"✅ Successfully ingested {count} security findings.")
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"❌ Error during database ingestion: {e}")
 
+# This keeps the file usable if you still want to run it completely on its own
 if __name__ == "__main__":
-    ingest()
+    # If run directly, it will look for command line arguments or use defaults
+    default_path = sys.argv[1] if len(sys.argv) > 1 else "findings.json"
+    default_db = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/trustlens")
+    
+    run_ingestion(default_path, default_db)

@@ -97,7 +97,7 @@ class CheckovNormalizer:
             ufm = UnifiedFinding(
                 source_tool="checkov",
                 rule_id=check_id,
-                title=finding.get("check_name", "Unknown check"),
+                title=finding.get("check_name") or "Unknown Checkov Issue",
                 severity_raw=severity,
                 category=category,
                 resource=resource,
@@ -108,7 +108,7 @@ class CheckovNormalizer:
                 ),
                 code_snippet=code_snippet if code_snippet else None,
                 cwe=CheckovNormalizer._extract_cwe(finding),
-                description=finding.get("description", ""),
+                description=finding.get("description") or "No description provided",
             )
 
             ufm_findings.append(ufm)
@@ -135,9 +135,10 @@ class CheckovNormalizer:
     def _extract_cwe(finding: Dict[str, Any]) -> List[str]:
         """Extract CWE IDs from finding if available"""
         cwe_list = []
-        guideline = finding.get("guideline", "")
+        # Use 'or ""' to safely handle cases where guideline is explicitly null (None)
+        guideline = finding.get("guideline") or ""
+        
         if "CWE" in guideline:
-            # Try to extract CWE numbers (simple extraction)
             import re
             matches = re.findall(r"CWE-\d+", guideline)
             cwe_list = matches

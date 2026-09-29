@@ -1,0 +1,2 @@
+[console_scripts]
+trustlens = main:main

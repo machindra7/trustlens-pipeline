@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """
 TrustLens - Cloud Security Auditing Framework
-Main entry point for Step 1 (Scanning) and Step 2 (Normalization)
+Main entry point for Step 1 (Scanning), Step 2 (Normalization), and Step 3 (Ingestion)
 """
 import logging
 import json
 import sys
+import os           # NEW: Needed to check for environment variables (like secrets)
+import argparse     # NEW: Needed to read command-line flags (like --path)
 from pathlib import Path
 from typing import List
 
@@ -17,6 +19,9 @@ from scanners.trivy_scanner import TrivyScanner
 from scanners.semgrep_scanner import SemgrepScanner
 from normalizer.normalize import Normalizer
 from models.finding import UnifiedFinding
+
+# NEW: Import the database ingestion function we updated in the previous step
+from ingest_findings import run_ingestion
 
 # Configure logging
 logging.basicConfig(
@@ -97,20 +102,31 @@ def save_findings(findings: List[UnifiedFinding], output_path: str):
 
 def main():
     """Main entry point"""
-    # Default repo path
-    repo_path = "./sample_repo"
-    output_path = "./findings.json"
+    # 1. DEFINE THE COMMAND-LINE FLAGS
+    parser = argparse.ArgumentParser(description="TrustLens Security Scanner")
+    parser.add_argument("--path", help="Path to the project you want to scan")
+    parser.add_argument("--db-url", help="Neon Database connection string")
+    args = parser.parse_args()
 
-    # Check if custom path provided via command line
-    if len(sys.argv) > 1:
-        repo_path = sys.argv[1]
-    if len(sys.argv) > 2:
-        output_path = sys.argv[2]
+    logger.info("🛡️ Welcome to TrustLens CLI")
 
-    # Verify repo exists
+    # 2. DETERMINE THE PATH (Flag vs. Interactive)
+    repo_path = args.path
+    if not repo_path:
+        repo_path = input("? Enter the path to the project to scan [Default: .]: ") or "."
+
+    # 3. DETERMINE THE DATABASE URL (Flag vs. Secret vs. Interactive)
+    db_url = args.db_url or os.getenv("DATABASE_URL")
+    if not db_url:
+        db_url = input("? Enter your Neon DATABASE_URL (leave blank to skip DB upload): ")
+
+    # 4. VERIFY REPOSITORY EXISTS
     if not Path(repo_path).exists():
         logger.error(f"Error: Repository path does not exist: {repo_path}")
         sys.exit(1)
+
+    # Clean up output path logic based on the user's input
+    output_path = f"{repo_path}/findings.json" if repo_path != "." else "./findings.json"
 
     # Step 1: Scanning
     checkov_findings, trivy_findings, semgrep_findings = run_scanning(repo_path)
@@ -126,8 +142,15 @@ def main():
     # Save findings
     save_findings(ufm_findings, output_path)
 
+    # Step 3: Database Ingestion
+    if db_url:
+        logger.info("\nUploading findings to Neon Cloud Database...")
+        run_ingestion(output_path, db_url)
+    else:
+        logger.info("\nSkipping database upload (no URL provided).")
+
     logger.info("")
-    logger.info("TrustLens pipeline completed successfully!")
+    logger.info("✅ TrustLens pipeline completed successfully!")
 
     return 0
 
