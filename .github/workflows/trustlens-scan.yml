@@ -38,12 +38,11 @@ jobs:
           pip install psycopg2-binary sqlalchemy pydantic
 
       # 2. Now run the python script to scan, normalize, and ingest
+        # 2. Run TrustLens CLI using proper flag arguments
       - name: Run TrustLens Orchestrator & Ingest
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           cd trustlens
-          python main.py .. findings.json
+          python main.py --path ".." --db-url "${{ secrets.DATABASE_URL }}"
 
       # 3. Save Artifact report as a backup
       - name: Save Findings Artifact
