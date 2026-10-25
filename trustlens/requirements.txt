@@ -1,2 +1,2 @@
-pydantic==2.5.0
+pydantic
 python-dotenv==1.0.0

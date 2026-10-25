@@ -1,283 +1,402 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  Search, Bell, Settings, Terminal as TerminalIcon, 
+  Box, Shield, Folder, Globe, CheckCircle, AlertTriangle, 
+  X, Loader2, Play, Activity, FileText, ChevronRight, ChevronDown, Code
+} from 'lucide-react';
 
-interface Finding {
-  id: number;
-  severity: string;
-  scanner: string;
-  ruleId: string;
-  title: string;
-  description: string;
-  category: string;
-  filePath: string;
-  startLine: number | null;
-}
+const INITIAL_GROUPED_VULNS = [
+  {
+    project: 'Password-Manager',
+    files: [
+      {
+        path: 'src/config/database.py',
+        issues: [
+          { line: 14, issue: 'Hardcoded PostgreSQL password detected', severity: 'Critical', snippet: "DB_PASS = 'super_secret_admin_123'\nconnect(user=DB_USER, password=DB_PASS)" },
+          { line: 22, issue: 'Insecure SSL connection configured', severity: 'High', snippet: "sslmode='disable'" }
+        ]
+      },
+      {
+        path: 'docker-compose.yml',
+        issues: [
+          { line: 8, issue: 'Container running with root privileges', severity: 'High', snippet: "services:\n  db:\n    image: postgres:15\n    user: 'root'" }
+        ]
+      }
+    ]
+  }
+];
 
-export default function Dashboard() {
-  const [data, setData] = useState<Finding[]>([]);
-  const [loading, setLoading] = useState(true);
+const SYSTEM_LOGS = [
+  "[12:30:05] [INFO] TrustLens daemon started successfully.",
+  "[12:31:12] [INFO] Connection established with Neon PostgreSQL.",
+  "[12:35:44] [WARN] Scan initiated on 'Password-Manager' by User.",
+  "[12:35:48] [ERROR] Semgrep detected 2 high-severity findings.",
+  "[12:35:50] [INFO] Scan complete. Telemetry synced to cloud."
+];
+
+export default function TrustLensDashboard() {
+  const [currentView, setCurrentView] = useState('scans'); 
+  const [projects, setProjects] = useState<any[]>([
+    { id: 1, name: 'Password-Manager', path: 'https://github.com/machindra7/Password-Manager', status: 'vulnerable', vulns: 4, lastScan: '5 mins ago' }
+  ]); 
+  const [groupedVulns, setGroupedVulns] = useState(INITIAL_GROUPED_VULNS);
+  const [scanningProjectId, setScanningProjectId] = useState<number | null>(null);
   
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedSeverity, setSelectedSeverity] = useState("ALL");
-  const [selectedTool, setSelectedTool] = useState("ALL");
-  const [selectedCategory, setSelectedCategory] = useState("ALL");
-  const [sortBy, setSortBy] = useState("severity-desc");
+  // Search State
+  const [searchQuery, setSearchQuery] = useState('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const loadData = () => {
-    setLoading(true);
-    fetch("/api/findings")
-      .then((res) => res.json())
-      .then((resData) => {
-        if (Array.isArray(resData)) setData(resData);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  };
+  // Accordion State
+  const [expandedProjects, setExpandedProjects] = useState<string[]>(['Password-Manager']);
+  const [expandedFiles, setExpandedFiles] = useState<string[]>(['Password-Manager/src/config/database.py']);
+
+  // CLI & Modal State
+  const [isTerminalOpen, setIsTerminalOpen] = useState(false);
+  const [cliState, setCliState] = useState('idle');
+  const [terminalOutput, setTerminalOutput] = useState([
+    "TrustLens CLI initialized.",
+    "Type 'trustlens' to start a scan or 'help' for commands."
+  ]);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [scanType, setScanType] = useState('github');
+  const [scanTarget, setScanTarget] = useState('');
+  const [isScanning, setIsScanning] = useState(false);
+
+  const endOfTerminalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    loadData();
+    endOfTerminalRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [terminalOutput, isTerminalOpen]);
+
+  // Ctrl+K Search Focus
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === 'k') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const clearFilters = () => {
-    setSearchQuery("");
-    setSelectedSeverity("ALL");
-    setSelectedTool("ALL");
-    setSelectedCategory("ALL");
-    setSortBy("severity-desc");
+  const toggleProject = (projectName: string) => {
+    setExpandedProjects(prev => prev.includes(projectName) ? prev.filter(p => p !== projectName) : [...prev, projectName]);
   };
 
-  const filteredData = data.filter((item) => {
-    const query = searchQuery.toLowerCase();
-    const matchesSearch = 
-      item.title.toLowerCase().includes(query) ||
-      item.ruleId.toLowerCase().includes(query) ||
-      item.filePath.toLowerCase().includes(query) ||
-      item.description.toLowerCase().includes(query);
+  const toggleFile = (fileKey: string) => {
+    setExpandedFiles(prev => prev.includes(fileKey) ? prev.filter(f => f !== fileKey) : [...prev, fileKey]);
+  };
 
-    const matchesSeverity = selectedSeverity === "ALL" || item.severity.toUpperCase() === selectedSeverity.toUpperCase();
-    const matchesTool = selectedTool === "ALL" || item.scanner.toUpperCase() === selectedTool.toUpperCase();
-    const matchesCategory = selectedCategory === "ALL" || (item.category && item.category.toUpperCase() === selectedCategory.toUpperCase());
+  // --- RE-SCAN SPECIFIC PROJECT ---
+  const handleReScanProject = async (proj: any, e: React.MouseEvent) => {
+    e.stopPropagation(); 
+    setScanningProjectId(proj.id);
+    
+    await new Promise(resolve => setTimeout(resolve, 2500));
 
-    return matchesSearch && matchesSeverity && matchesTool && matchesCategory;
-  });
+    setProjects(prev => prev.map(p => p.id === proj.id ? { ...p, lastScan: 'Just now' } : p));
+    setScanningProjectId(null);
+    setCurrentView('vulnerabilities'); 
+  };
 
-  const sortedData = [...filteredData].sort((a, b) => {
-    const severityRank: Record<string, number> = { CRITICAL: 4, HIGH: 3, MEDIUM: 2, LOW: 1, UNKNOWN: 0 };
-    if (sortBy === "severity-desc") {
-      return (severityRank[b.severity.toUpperCase()] || 0) - (severityRank[a.severity.toUpperCase()] || 0);
-    } else if (sortBy === "severity-asc") {
-      return (severityRank[a.severity.toUpperCase()] || 0) - (severityRank[b.severity.toUpperCase()] || 0);
-    } else if (sortBy === "rule-asc") {
-      return a.ruleId.localeCompare(b.ruleId);
+  // --- MOCK VULNERABILITY GENERATOR ---
+  const processNewScanResults = (target: string) => {
+    const projectName = target.split('/').pop() || 'new-scanned-project';
+    const generatedVulnsCount = Math.floor(Math.random() * 4) + 1;
+    
+    setProjects(prev => [{
+      id: Date.now(),
+      name: projectName,
+      path: target,
+      status: 'vulnerable',
+      vulns: generatedVulnsCount,
+      lastScan: 'Just now'
+    }, ...prev]);
+
+    const newVulnEntry = {
+      project: projectName,
+      files: [
+        {
+          path: 'src/main.py',
+          issues: Array.from({ length: generatedVulnsCount }).map((_, idx) => ({
+            line: Math.floor(Math.random() * 100) + 10,
+            issue: idx === 0 ? 'Secret token found in commit history' : 'Unsanitized input allows injection',
+            severity: idx === 0 ? 'Critical' : 'Medium',
+            snippet: idx === 0 ? `API_KEY = "sk_live_123456789"\nprint(API_KEY)` : `query = f"SELECT * FROM users WHERE name = '{user_input}'"`
+          }))
+        }
+      ]
+    };
+    
+    setGroupedVulns(prev => [newVulnEntry, ...prev]);
+    setExpandedProjects(prev => [...prev, projectName]);
+  };
+
+  // --- CLI INTERACTION ---
+  const handleTerminalInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      const val = e.currentTarget.value;
+      if (!val.trim() && cliState === 'idle') return;
+      
+      setTerminalOutput(prev => [...prev, `ubuntu@trustlens:~$ ${val}`]);
+      e.currentTarget.value = '';
+
+      if (cliState === 'awaiting_path') {
+        const target = val.trim() || '.';
+        setCliState('idle');
+        
+        setTerminalOutput(prev => [
+          ...prev, `> Initializing scan for: ${target}`, `> Running static analysis...`
+        ]);
+
+        setTimeout(() => {
+          processNewScanResults(target);
+          setTerminalOutput(prev => [
+            ...prev, `> Scan complete. Dashboard synchronized successfully!`
+          ]);
+        }, 3000);
+        return;
+      }
+
+      if (val.trim() === 'trustlens') {
+        setCliState('awaiting_path');
+        setTimeout(() => setTerminalOutput(prev => [
+          ...prev, "🛡️ Welcome to TrustLens CLI", "? Enter local path or GitHub URL to scan [Default: .]:"
+        ]), 100);
+      } else if (val.trim() !== '') {
+        setTimeout(() => setTerminalOutput(prev => [...prev, `Command not found: ${val}`]), 100);
+      }
     }
-    return 0;
-  });
-
-  const exportCSV = () => {
-    if (sortedData.length === 0) return alert("No data to export!");
-    const headers = ["Severity", "Tool", "Rule ID", "Title", "File", "Lines"];
-    const rows = sortedData.map(f => [
-      `"${f.severity}"`, `"${f.scanner}"`, `"${f.ruleId}"`, 
-      `"${f.title.replace(/"/g, '""')}"`, `"${f.filePath}"`, `"${f.startLine || ''}"`
-    ]);
-    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
-    const link = document.createElement("a");
-    link.setAttribute("href", encodeURI(csvContent));
-    link.setAttribute("download", "trustlens_findings.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
 
-  const exportJSON = () => {
-    if (sortedData.length === 0) return alert("No data to export!");
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(sortedData, null, 2));
-    const link = document.createElement("a");
-    link.setAttribute("href", dataStr);
-    link.setAttribute("download", "trustlens_findings.json");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  // --- UI SCAN BUTTON ---
+  const handleUiScan = async () => {
+    if (!scanTarget.trim()) return;
+    setIsScanning(true);
+    await new Promise(resolve => setTimeout(resolve, 3000));
+    
+    processNewScanResults(scanTarget);
+    
+    setIsScanning(false);
+    setIsAddModalOpen(false);
+    setScanTarget('');
+    setCurrentView('vulnerabilities');
   };
 
-  const stats = {
-    total: data.length,
-    critical: data.filter(f => f.severity.toUpperCase() === "CRITICAL").length,
-    high: data.filter(f => f.severity.toUpperCase() === "HIGH").length,
-    medium: data.filter(f => f.severity.toUpperCase() === "MEDIUM").length,
-  };
-
-  const getSeverityBadge = (sev: string) => {
-    switch (sev.toUpperCase()) {
-      case "CRITICAL": return "text-red-600 font-bold bg-red-50 px-2 py-0.5 rounded";
-      case "HIGH": return "text-orange-600 font-bold bg-orange-50 px-2 py-0.5 rounded";
-      case "MEDIUM": return "text-yellow-600 font-bold bg-yellow-50 px-2 py-0.5 rounded";
-      case "LOW": return "text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded";
-      default: return "text-gray-600 font-bold bg-gray-50 px-2 py-0.5 rounded";
-    }
-  };
+  // --- SEARCH FILTERING ---
+  const filteredProjects = projects.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.path.toLowerCase().includes(searchQuery.toLowerCase()));
+  const filteredVulns = groupedVulns.filter(v => v.project.toLowerCase().includes(searchQuery.toLowerCase()));
 
   return (
-    <div className="min-h-screen bg-slate-100 font-sans text-slate-800">
-      <header className="bg-slate-900 text-white px-8 py-3 flex items-center justify-between shadow">
-        <div className="flex items-center space-x-2">
-          <span className="font-bold text-lg tracking-wider">🔒 TrustLens</span>
+    <div className="flex flex-col h-screen bg-[#0B1015] text-gray-300 font-sans overflow-hidden">
+      
+      {/* TOP NAVIGATION */}
+      <div className="h-12 bg-[#0B1015] border-b border-[#232931] flex items-center justify-between px-4 shrink-0">
+        <div onClick={() => setCurrentView('scans')} className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
+          <Shield className="w-5 h-5 text-blue-500" />
+          <span className="text-white font-semibold tracking-wide">trustlens</span>
+          <span className="bg-[#1A202A] text-[10px] text-gray-300 px-1.5 py-0.5 rounded border border-[#2A313C] ml-1">PERSONAL</span>
         </div>
-        <div className="text-sm text-slate-300">Security Findings Dashboard</div>
-        <button 
-          onClick={loadData}
-          className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-xs px-3 py-1.5 rounded border border-slate-700 transition cursor-pointer"
-        >
-          🔄 Refresh
-        </button>
-      </header>
-
-      {/* Expanded width container with generous padding */}
-      <main className="w-full px-8 py-6 flex flex-col gap-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div onClick={() => setSelectedSeverity("ALL")} className="bg-white p-5 rounded-lg shadow-sm border border-slate-200 cursor-pointer hover:border-slate-300 transition text-center">
-            <div className="text-2xl font-bold text-slate-900">{stats.total}</div>
-            <div className="text-xs font-medium text-slate-500 uppercase mt-1">Total Findings</div>
-          </div>
-          <div onClick={() => setSelectedSeverity("CRITICAL")} className="bg-white p-5 rounded-lg shadow-sm border border-slate-200 cursor-pointer hover:border-red-300 transition text-center">
-            <div className="text-2xl font-bold text-red-600">{stats.critical}</div>
-            <div className="text-xs font-medium text-slate-500 uppercase mt-1">Critical</div>
-          </div>
-          <div onClick={() => setSelectedSeverity("HIGH")} className="bg-white p-5 rounded-lg shadow-sm border border-slate-200 cursor-pointer hover:border-orange-300 transition text-center">
-            <div className="text-2xl font-bold text-orange-600">{stats.high}</div>
-            <div className="text-xs font-medium text-slate-500 uppercase mt-1">High</div>
-          </div>
-          <div onClick={() => setSelectedSeverity("MEDIUM")} className="bg-white p-5 rounded-lg shadow-sm border border-slate-200 cursor-pointer hover:border-yellow-300 transition text-center">
-            <div className="text-2xl font-bold text-yellow-600">{stats.medium}</div>
-            <div className="text-xs font-medium text-slate-500 uppercase mt-1">Medium</div>
-          </div>
-        </div>
-
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-slate-200 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-3 items-center">
-          <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1">Search</label>
+        
+        <div className="flex-1 max-w-lg mx-4">
+          <div className="relative">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input 
-              type="text"
-              placeholder="Search title, rule, file..."
+              ref={searchInputRef}
+              type="text" 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-3 py-1.5 text-sm border border-slate-300 rounded bg-white focus:outline-none focus:ring-1 focus:ring-slate-500"
+              placeholder="Search projects..." 
+              className="w-full bg-[#151B23] border border-[#2A313C] rounded-md py-1 pl-9 pr-4 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors"
             />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1">Severity</label>
-            <select 
-              value={selectedSeverity}
-              onChange={(e) => setSelectedSeverity(e.target.value)}
-              className="w-full px-3 py-1.5 text-sm border border-slate-300 rounded bg-white focus:outline-none"
-            >
-              <option value="ALL">All Severities</option>
-              <option value="CRITICAL">Critical</option>
-              <option value="HIGH">High</option>
-              <option value="MEDIUM">Medium</option>
-              <option value="LOW">Low</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1">Tool</label>
-            <select 
-              value={selectedTool}
-              onChange={(e) => setSelectedTool(e.target.value)}
-              className="w-full px-3 py-1.5 text-sm border border-slate-300 rounded bg-white focus:outline-none"
-            >
-              <option value="ALL">All Tools</option>
-              <option value="TRIVY">Trivy</option>
-              <option value="SEMGREP">Semgrep</option>
-              <option value="CHECKOV">Checkov</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1">Category</label>
-            <select 
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full px-3 py-1.5 text-sm border border-slate-300 rounded bg-white focus:outline-none"
-            >
-              <option value="ALL">All Categories</option>
-              <option value="vulnerability">Vulnerability</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1">Sort By</label>
-            <select 
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="w-full px-3 py-1.5 text-sm border border-slate-300 rounded bg-white focus:outline-none"
-            >
-              <option value="severity-desc">Severity (High to Low)</option>
-              <option value="severity-asc">Severity (Low to High)</option>
-              <option value="rule-asc">Rule ID (A-Z)</option>
-            </select>
-          </div>
-          <div className="flex items-end h-full pt-5">
-            <button 
-              onClick={clearFilters}
-              className="w-full px-3 py-1.5 text-sm border border-slate-300 rounded bg-slate-50 hover:bg-slate-100 text-slate-700 transition flex items-center justify-center gap-1 cursor-pointer"
-            >
-              ✕ Clear
-            </button>
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 font-mono">Ctrl+K</span>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
-          <div className="px-6 py-3 border-b border-slate-200 flex items-center justify-between bg-slate-50">
-            <span className="font-semibold text-sm text-slate-700">Findings ({sortedData.length})</span>
-            <div className="flex gap-2">
-              <button onClick={exportJSON} className="text-xs px-3 py-1 border border-slate-300 rounded bg-white hover:bg-slate-50 font-medium text-slate-700 cursor-pointer">
-                📥 Export JSON
-              </button>
-              <button onClick={exportCSV} className="text-xs px-3 py-1 border border-slate-300 rounded bg-white hover:bg-slate-50 font-medium text-slate-700 cursor-pointer">
-                📄 Export CSV
+        <div className="flex items-center gap-4">
+          <Bell className="w-4 h-4 text-gray-400 hover:text-white cursor-pointer relative" />
+          <Settings className="w-4 h-4 text-gray-400 hover:text-white cursor-pointer" />
+          <div className="w-7 h-7 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold cursor-pointer">M</div>
+        </div>
+      </div>
+
+      {/* MAIN BODY */}
+      <div className="flex flex-1 overflow-hidden">
+        
+        {/* SIDEBAR */}
+        <div className="w-60 bg-[#0B1015] border-r border-[#232931] flex flex-col shrink-0">
+          <div className="py-4">
+            <div className="px-4 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Dashboard</div>
+            <ul className="space-y-0.5 text-sm">
+              <li onClick={() => setCurrentView('scans')} className={`px-4 py-2 cursor-pointer flex items-center gap-3 border-l-2 ${currentView === 'scans' ? 'bg-[#1A202A] text-white border-blue-500' : 'text-gray-400 hover:text-white hover:bg-[#151B23] border-transparent'}`}><Box className="w-4 h-4" /> Scans</li>
+              <li onClick={() => setCurrentView('vulnerabilities')} className={`px-4 py-2 cursor-pointer flex items-center gap-3 border-l-2 ${currentView === 'vulnerabilities' ? 'bg-[#1A202A] text-white border-blue-500' : 'text-gray-400 hover:text-white hover:bg-[#151B23] border-transparent'}`}><AlertTriangle className="w-4 h-4" /> Vulnerabilities</li>
+              <li onClick={() => setCurrentView('logs')} className={`px-4 py-2 cursor-pointer flex items-center gap-3 border-l-2 ${currentView === 'logs' ? 'bg-[#1A202A] text-white border-blue-500' : 'text-gray-400 hover:text-white hover:bg-[#151B23] border-transparent'}`}><Activity className="w-4 h-4" /> Logs</li>
+            </ul>
+          </div>
+        </div>
+
+        {/* CONTENT AREA */}
+        <div className="flex-1 bg-[#0F141B] flex flex-col relative overflow-y-auto">
+          <div className="px-8 py-5 border-b border-[#232931] flex items-center justify-between shrink-0">
+            <h1 className="text-xl font-semibold text-white capitalize">{currentView}</h1>
+            {currentView === 'scans' && projects.length > 0 && (
+              <div className="flex items-center gap-3">
+                <button onClick={() => {setScanType('local'); setIsAddModalOpen(true);}} className="flex items-center gap-2 bg-[#151B23] border border-[#2A313C] hover:bg-[#1A202A] text-gray-300 text-sm px-3 py-1.5 rounded transition-colors"><Folder className="w-4 h-4" /> Local Path</button>
+                <button onClick={() => {setScanType('github'); setIsAddModalOpen(true);}} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white text-sm px-3 py-1.5 rounded transition-colors"><Globe className="w-4 h-4" /> GitHub Repo</button>
+              </div>
+            )}
+          </div>
+
+          <div className="p-8">
+            
+            {/* VIEW: SCANS */}
+            {currentView === 'scans' && (
+              <>
+                {filteredProjects.length === 0 ? (
+                  <p className="text-gray-500 text-center mt-10">No projects found.</p>
+                ) : (
+                  <div className="grid gap-3">
+                    {filteredProjects.map((proj) => (
+                      <div key={proj.id} className="bg-[#151B23] border border-[#232931] p-4 rounded-lg flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <Box className="w-5 h-5 text-blue-500" />
+                          <div>
+                            <h3 className="text-white font-medium text-sm">{proj.name}</h3>
+                            <p className="text-xs text-gray-500 font-mono mt-0.5">{proj.path}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <span className="text-red-500 flex items-center gap-1 text-sm"><AlertTriangle className="w-4 h-4"/> {proj.vulns} Issues</span>
+                          <button 
+                            onClick={(e) => handleReScanProject(proj, e)}
+                            title="Re-run Scan"
+                            className="p-2 hover:bg-[#2A313C] rounded text-gray-400 hover:text-white transition-colors"
+                          >
+                            {scanningProjectId === proj.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+                            ) : (
+                              <Play className="w-4 h-4 fill-current" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* VIEW: VULNERABILITIES */}
+            {currentView === 'vulnerabilities' && (
+              <div className="w-full flex flex-col gap-3">
+                {filteredVulns.map((proj) => {
+                  const isProjOpen = expandedProjects.includes(proj.project);
+                  return (
+                    <div key={proj.project} className="bg-[#151B23] border border-[#232931] rounded-lg overflow-hidden">
+                      <div onClick={() => toggleProject(proj.project)} className="p-3 bg-[#1A202A] flex items-center gap-3 cursor-pointer hover:bg-[#1f2733] transition-colors">
+                        {isProjOpen ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
+                        <Folder className="w-4 h-4 text-blue-400" />
+                        <span className="text-white font-medium text-sm">{proj.project}</span>
+                        <span className="ml-auto text-xs bg-[#0B1015] border border-[#232931] px-2 py-1 rounded text-gray-400">{proj.files.length} Files Affected</span>
+                      </div>
+
+                      {isProjOpen && (
+                        <div className="flex flex-col border-t border-[#232931]">
+                          {proj.files.map((file) => {
+                            const fileKey = `${proj.project}/${file.path}`;
+                            const isFileOpen = expandedFiles.includes(fileKey);
+                            return (
+                              <div key={file.path} className="border-b border-[#232931] last:border-0">
+                                <div onClick={() => toggleFile(fileKey)} className="p-3 pl-8 flex items-center gap-3 cursor-pointer hover:bg-[#1C2431] transition-colors bg-[#11161d]">
+                                  {isFileOpen ? <ChevronDown className="w-4 h-4 text-gray-500" /> : <ChevronRight className="w-4 h-4 text-gray-500" />}
+                                  <FileText className="w-4 h-4 text-gray-400" />
+                                  <span className="text-gray-300 text-sm font-mono">{file.path}</span>
+                                  <span className="ml-auto text-xs text-red-400 font-medium">{file.issues.length} Issues</span>
+                                </div>
+
+                                {isFileOpen && (
+                                  <div className="p-4 pl-14 bg-[#0B1015] flex flex-col gap-3">
+                                    {file.issues.map((issue, idx) => (
+                                      <div key={idx} className="bg-[#151B23] border border-[#232931] rounded-md p-4">
+                                        <div className="flex items-start justify-between mb-3">
+                                          <div className="flex items-center gap-3">
+                                            <span className="bg-[#2A313C] text-gray-300 text-xs px-2 py-1 rounded font-mono">Line {issue.line}</span>
+                                            <span className="text-gray-200 text-sm font-medium">{issue.issue}</span>
+                                          </div>
+                                          <span className={`inline-flex px-2 py-1 rounded text-xs font-semibold ${issue.severity === 'Critical' ? 'bg-red-500/20 text-red-500 border border-red-500/30' : issue.severity === 'High' ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'}`}>{issue.severity}</span>
+                                        </div>
+                                        <div className="bg-black border border-[#232931] rounded flex flex-col mt-2">
+                                          <div className="flex items-center gap-2 px-3 py-1.5 border-b border-[#232931] bg-[#11151A]"><Code className="w-3 h-3 text-gray-500" /><span className="text-[10px] uppercase text-gray-500 font-semibold tracking-wider">Vulnerable Block</span></div>
+                                          <pre className="p-3 text-xs font-mono text-blue-300 overflow-x-auto whitespace-pre-wrap">{issue.snippet}</pre>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* VIEW: LOGS */}
+            {currentView === 'logs' && (
+              <div className="w-full h-[500px] bg-black border border-[#232931] rounded-lg p-4 font-mono text-sm overflow-y-auto">
+                {SYSTEM_LOGS.map((log, index) => (<div key={index} className={`mb-1 ${log.includes('[ERROR]') ? 'text-red-400' : log.includes('[WARN]') ? 'text-yellow-400' : 'text-gray-300'}`}>{log}</div>))}
+              </div>
+            )}
+
+          </div>
+        </div>
+      </div>
+
+      <div className="h-8 bg-[#0B1015] border-t border-[#232931] flex items-center justify-between px-4 shrink-0 text-xs">
+        <div className="flex items-center gap-6"><span className="text-gray-500">TrustLens Scanner v1.0.0</span></div>
+        <button onClick={() => setIsTerminalOpen(!isTerminalOpen)} className={`flex items-center gap-2 font-mono font-medium hover:text-white transition-colors px-2 py-1 rounded ${isTerminalOpen ? 'text-white bg-[#1A202A]' : 'text-gray-400'}`}>&gt;_ Terminal</button>
+      </div>
+
+      {isAddModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#151B23] border border-[#232931] rounded-xl w-full max-w-md shadow-2xl">
+            <div className="flex justify-between items-center p-4 border-b border-[#232931]">
+              <h3 className="text-sm font-semibold text-white">Add Project to Scan</h3>
+              <button onClick={() => setIsAddModalOpen(false)} className="text-gray-400 hover:text-white"><X className="w-4 h-4" /></button>
+            </div>
+            <div className="p-5">
+              <label className="block text-xs text-gray-400 mb-2 uppercase tracking-wide">{scanType === 'github' ? 'Repository URL' : 'Absolute Folder Path'}</label>
+              <input type="text" value={scanTarget} onChange={(e) => setScanTarget(e.target.value)} placeholder={scanType === 'github' ? 'https://github.com/user/repo' : '/home/ubuntu/project'} className="w-full bg-[#0B1015] border border-[#232931] rounded p-2 text-sm text-white focus:outline-none focus:border-blue-500 mb-4" />
+              <button onClick={handleUiScan} disabled={isScanning || !scanTarget.trim()} className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white py-2 rounded flex justify-center items-center gap-2 text-sm">
+                {isScanning ? <><Loader2 className="w-4 h-4 animate-spin" /> Scanning...</> : 'Run Scan'}
               </button>
             </div>
           </div>
+        </div>
+      )}
 
-          <div className="overflow-x-auto">
-            <table className="w-full divide-y divide-slate-200 text-sm">
-              <thead className="bg-slate-100 text-slate-600 font-semibold text-xs uppercase tracking-wider">
-                <tr>
-                  <th className="px-6 py-3 text-left w-32">Severity</th>
-                  <th className="px-6 py-3 text-left w-32">Tool</th>
-                  <th className="px-6 py-3 text-left w-48">Rule ID</th>
-                  <th className="px-6 py-3 text-left">Title</th>
-                  <th className="px-6 py-3 text-left w-64">File</th>
-                  <th className="px-6 py-3 text-left w-24">Lines</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200 bg-white">
-                {loading ? (
-                  <tr>
-                    <td colSpan={6} className="px-6 py-8 text-center text-slate-500">Loading findings...</td>
-                  </tr>
-                ) : sortedData.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center text-slate-500">No findings match your filters.</td>
-                  </tr>
-                ) : (
-                  sortedData.map((f) => (
-                    <tr key={f.id} className="hover:bg-slate-50 transition">
-                      <td className="px-6 py-4 whitespace-nowrap align-top">
-                        <span className={getSeverityBadge(f.severity)}>{f.severity}</span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap align-top font-medium text-slate-700">{f.scanner}</td>
-                      <td className="px-6 py-4 whitespace-nowrap align-top font-mono text-xs text-indigo-600 font-semibold">{f.ruleId}</td>
-                      <td className="px-6 py-4 align-top text-slate-900 break-words">{f.title}</td>
-                      <td className="px-6 py-4 align-top font-mono text-xs text-slate-600 break-all">{f.filePath}</td>
-                      <td className="px-6 py-4 align-top font-mono text-xs text-slate-500 whitespace-nowrap">{f.startLine || "-"}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+      {isTerminalOpen && (
+        <div className="absolute bottom-8 right-0 w-full md:w-[600px] h-[350px] bg-[#0B1015] border-t border-l border-[#232931] flex flex-col shadow-2xl z-40">
+          <div className="bg-[#151B23] p-2 flex justify-between items-center border-b border-[#232931]">
+            <span className="text-xs text-gray-400 font-mono tracking-wider ml-2">TERMINAL</span>
+            <button onClick={() => setIsTerminalOpen(false)} className="text-gray-400 hover:text-white p-1"><X className="w-4 h-4" /></button>
+          </div>
+          <div className="flex-1 p-3 font-mono text-sm overflow-y-auto bg-black" style={{ color: '#00ff00' }}>
+            {terminalOutput.map((line, i) => (<div key={i} className="mb-0.5">{line}</div>))}
+            <div className="flex items-center mt-1">
+              <span className="text-blue-400 mr-2">{cliState === 'awaiting_path' ? '>' : 'ubuntu@trustlens:~$'}</span>
+              <input type="text" className="flex-1 bg-transparent outline-none border-none text-green-400" autoFocus onKeyDown={handleTerminalInput} autoComplete="off" spellCheck="false" />
+            </div>
+            <div ref={endOfTerminalRef} />
           </div>
         </div>
-      </main>
+      )}
     </div>
   );
 }

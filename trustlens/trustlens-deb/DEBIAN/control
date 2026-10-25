@@ -1,0 +1,7 @@
+Package: trustlens-scanner
+Version: 1.0.0
+Section: utils
+Priority: optional
+Architecture: amd64
+Maintainer: Machindra Mane <machindra@trustlens.dev>
+Description: TrustLens Security Scanning CLI
