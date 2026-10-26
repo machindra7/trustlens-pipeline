@@ -21,7 +21,7 @@ const INITIAL_GROUPED_VULNS = [
       {
         path: 'docker-compose.yml',
         issues: [
-          { line: 8, issue: 'Container running with root privileges', severity: 'High', snippet: "services:\n  db:\n    image: postgres:15\n    user: 'root'" }
+          { line: 8, issue: 'Insecure port binding & root privileges', severity: 'High', snippet: "services:\n  db:\n    image: postgres:15\n    ports:\n      - \"2222:22\"" }
         ]
       }
     ]
@@ -39,18 +39,21 @@ const SYSTEM_LOGS = [
 export default function TrustLensDashboard() {
   const [currentView, setCurrentView] = useState('scans'); 
   const [projects, setProjects] = useState<any[]>([
-    { id: 1, name: 'Password-Manager', path: 'https://github.com/machindra7/Password-Manager', status: 'vulnerable', vulns: 4, lastScan: '5 mins ago' }
+    { id: 1, name: 'Password-Manager', path: 'https://github.com/machindra7/Password-Manager', status: 'vulnerable', vulns: 3, lastScan: '5 mins ago' }
   ]); 
   const [groupedVulns, setGroupedVulns] = useState(INITIAL_GROUPED_VULNS);
   const [scanningProjectId, setScanningProjectId] = useState<number | null>(null);
   
+  // Real-time Honeypot Telemetry State from Neon PostgreSQL
+  const [honeypotLogs, setHoneypotLogs] = useState<any[]>([]);
+
   // Search State
   const [searchQuery, setSearchQuery] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Accordion State
   const [expandedProjects, setExpandedProjects] = useState<string[]>(['Password-Manager']);
-  const [expandedFiles, setExpandedFiles] = useState<string[]>(['Password-Manager/src/config/database.py']);
+  const [expandedFiles, setExpandedFiles] = useState<string[]>(['Password-Manager/src/config/database.py', 'Password-Manager/docker-compose.yml']);
 
   // CLI & Modal State
   const [isTerminalOpen, setIsTerminalOpen] = useState(false);
@@ -65,6 +68,25 @@ export default function TrustLensDashboard() {
   const [isScanning, setIsScanning] = useState(false);
 
   const endOfTerminalRef = useRef<HTMLDivElement>(null);
+
+  // --- AUTO-FETCH HONEYPOT LOGS EVERY 5 SECONDS ---
+  useEffect(() => {
+    const fetchHoneypotLogs = async () => {
+      try {
+        const res = await fetch('/api/honeypot-logs');
+        const data = await res.json();
+        if (data.success) {
+          setHoneypotLogs(data.logs);
+        }
+      } catch (err) {
+        console.error("Failed to fetch honeypot logs:", err);
+      }
+    };
+
+    fetchHoneypotLogs();
+    const interval = setInterval(fetchHoneypotLogs, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     endOfTerminalRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -325,6 +347,13 @@ export default function TrustLensDashboard() {
                                           <div className="flex items-center gap-3">
                                             <span className="bg-[#2A313C] text-gray-300 text-xs px-2 py-1 rounded font-mono">Line {issue.line}</span>
                                             <span className="text-gray-200 text-sm font-medium">{issue.issue}</span>
+                                            
+                                            {/* ACTIVE DEFENSE BADGE FOR HONEYPOT TRAP */}
+                                            {(file.path.includes("docker-compose") || issue.snippet.includes("2222")) && (
+                                              <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs px-2 py-0.5 rounded font-semibold flex items-center gap-1">
+                                                <Shield className="w-3 h-3" /> Active Defense Deployed (Port 2222)
+                                              </span>
+                                            )}
                                           </div>
                                           <span className={`inline-flex px-2 py-1 rounded text-xs font-semibold ${issue.severity === 'Critical' ? 'bg-red-500/20 text-red-500 border border-red-500/30' : issue.severity === 'High' ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'}`}>{issue.severity}</span>
                                         </div>
@@ -347,10 +376,69 @@ export default function TrustLensDashboard() {
               </div>
             )}
 
-            {/* VIEW: LOGS */}
+            {/* VIEW: LOGS (SYSTEM LOGS + LIVE NEON HONEYPOT TELEMETRY) */}
             {currentView === 'logs' && (
-              <div className="w-full h-[500px] bg-black border border-[#232931] rounded-lg p-4 font-mono text-sm overflow-y-auto">
-                {SYSTEM_LOGS.map((log, index) => (<div key={index} className={`mb-1 ${log.includes('[ERROR]') ? 'text-red-400' : log.includes('[WARN]') ? 'text-yellow-400' : 'text-gray-300'}`}>{log}</div>))}
+              <div className="flex flex-col gap-6">
+                
+                {/* LIVE HONEYPOT TELEMETRY TABLE */}
+                <div className="bg-[#151B23] border border-[#232931] rounded-lg p-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <Shield className="w-5 h-5 text-emerald-400" />
+                      <div>
+                        <h3 className="text-white text-sm font-semibold">Ephemeral Micro-Honeypot Telemetry</h3>
+                        <p className="text-xs text-gray-400 font-mono">Connected to Neon PostgreSQL • Listening on Port 2222</p>
+                      </div>
+                    </div>
+                    <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs px-2.5 py-1 rounded-full flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Live Telemetry Syncing
+                    </span>
+                  </div>
+
+                  <div className="w-full bg-[#0B1015] border border-[#232931] rounded-md overflow-hidden font-mono">
+                    <table className="w-full text-left text-xs text-gray-300">
+                      <thead className="bg-[#1A202A] text-gray-400 uppercase tracking-wider">
+                        <tr>
+                          <th className="p-3">Timestamp</th>
+                          <th className="p-3">Source IP</th>
+                          <th className="p-3">Port</th>
+                          <th className="p-3">Captured Attacker Payload</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {honeypotLogs.length === 0 ? (
+                          <tr>
+                            <td colSpan={4} className="p-4 text-center text-gray-500">
+                              No attacker probes captured yet. Listening for connections...
+                            </td>
+                          </tr>
+                        ) : (
+                          honeypotLogs.map((log) => (
+                            <tr key={log.id} className="border-b border-[#232931] hover:bg-[#11161d] transition-colors">
+                              <td className="p-3 text-gray-400">{new Date(log.timestamp).toLocaleTimeString()}</td>
+                              <td className="p-3 text-blue-400 font-semibold">{log.ip_address}</td>
+                              <td className="p-3 text-yellow-400">{log.port}</td>
+                              <td className="p-3 text-red-400 font-bold bg-red-950/20">{log.payload || "(Empty Banner Probe)"}</td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* SYSTEM DAEMON LOGS */}
+                <div>
+                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">System Daemon Output</h4>
+                  <div className="w-full h-[200px] bg-black border border-[#232931] rounded-lg p-4 font-mono text-sm overflow-y-auto">
+                    {SYSTEM_LOGS.map((log, index) => (
+                      <div key={index} className={`mb-1 ${log.includes('[ERROR]') ? 'text-red-400' : log.includes('[WARN]') ? 'text-yellow-400' : 'text-gray-300'}`}>
+                        {log}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
               </div>
             )}
 
@@ -358,11 +446,13 @@ export default function TrustLensDashboard() {
         </div>
       </div>
 
+      {/* FOOTER BAR */}
       <div className="h-8 bg-[#0B1015] border-t border-[#232931] flex items-center justify-between px-4 shrink-0 text-xs">
         <div className="flex items-center gap-6"><span className="text-gray-500">TrustLens Scanner v1.0.0</span></div>
         <button onClick={() => setIsTerminalOpen(!isTerminalOpen)} className={`flex items-center gap-2 font-mono font-medium hover:text-white transition-colors px-2 py-1 rounded ${isTerminalOpen ? 'text-white bg-[#1A202A]' : 'text-gray-400'}`}>&gt;_ Terminal</button>
       </div>
 
+      {/* ADD PROJECT MODAL */}
       {isAddModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-[#151B23] border border-[#232931] rounded-xl w-full max-w-md shadow-2xl">
@@ -381,6 +471,7 @@ export default function TrustLensDashboard() {
         </div>
       )}
 
+      {/* CLI TERMINAL OVERLAY */}
       {isTerminalOpen && (
         <div className="absolute bottom-8 right-0 w-full md:w-[600px] h-[350px] bg-[#0B1015] border-t border-l border-[#232931] flex flex-col shadow-2xl z-40">
           <div className="bg-[#151B23] p-2 flex justify-between items-center border-b border-[#232931]">
