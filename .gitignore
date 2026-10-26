@@ -4,3 +4,4 @@ venv/
 __pycache__/
 findings.json
 .env
+.env.local
